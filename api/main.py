@@ -1,6 +1,6 @@
+import json
 import os
 import re
-import json
 from enum import Enum
 
 from fastapi import FastAPI
@@ -105,11 +105,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def extract_json_from_response(text: str):
     match = re.search(r"```json\s*(\[\s*{.*?}\s*\])\s*```", text, re.DOTALL)
     if match:
         return json.loads(match.group(1))
     return None
+
 
 @app.post("/")
 def index(request: AltimateRequest):
@@ -122,8 +124,17 @@ def index(request: AltimateRequest):
         res = client.models.generate_content(model=MODEL, contents=prompt_text)
 
         try:
-            if res and res.candidates and res.candidates[0].content and res.candidates[0].content.parts and res.candidates[0].content.parts[0] and res.candidates[0].content.parts[0].text:
-                correction = extract_json_from_response(res.candidates[0].content.parts[0].text)
+            if (
+                res
+                and res.candidates
+                and res.candidates[0].content
+                and res.candidates[0].content.parts
+                and res.candidates[0].content.parts[0]
+                and res.candidates[0].content.parts[0].text
+            ):
+                correction = extract_json_from_response(
+                    res.candidates[0].content.parts[0].text
+                )
                 if correction:
                     corrections.append(correction)
         except Exception as e:
