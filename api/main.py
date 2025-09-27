@@ -4,6 +4,7 @@ import re
 
 from fastapi import FastAPI, HTTPException
 from google.genai.types import Part, UserContent
+from fastapi.middleware.cors import CORSMiddleware
 
 from .altimate import altimate_agent
 from .altimate.utils import get_agent_response
@@ -11,6 +12,14 @@ from .altimate.types import AltimateRequest, AccessibilityCorrection
 from .altimate.parallel import build_parallel_agent
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Vite and Create React App default ports
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 @app.post("/")
 async def request_corrections(request: AltimateRequest):
@@ -35,7 +44,7 @@ async def request_corrections(request: AltimateRequest):
 
     try:
         response = await asyncio.wait_for(
-            get_agent_response(runner, session, content), timeout=10
+            get_agent_response(runner, session, content), timeout=400
         )
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="AI agent timed out")
@@ -68,3 +77,8 @@ async def request_corrections(request: AltimateRequest):
         "corrections": [c.model_dump() for c in corrections],
         "summary": summary
     }
+
+@app.post("/debug")
+async def debug_request(request: AltimateRequest):
+    print(request.requested_checks)
+    return {"ok": True}
