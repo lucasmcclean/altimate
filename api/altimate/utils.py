@@ -15,8 +15,6 @@ async def get_agent_response(
         session_id=session.id,
         new_message=content,
     ):
-        key = getattr(event, "output_key", "default")
-
         if not event.content or not event.content.parts:
             continue
 
@@ -25,11 +23,13 @@ async def get_agent_response(
             for part in event.content.parts
             if hasattr(part, "text") and part.text
         ]
-
         if not text_parts:
             continue
 
+        full_text = "\n".join(text_parts).strip()
+
+        key = getattr(event, "output_key", "default")  # Default if no output_key is set
         agent_response.setdefault(key, "")
-        agent_response[key] += "\n".join(text_parts) + "\n"
+        agent_response[key] += full_text + "\n"
 
     return agent_response
