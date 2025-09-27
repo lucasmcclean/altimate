@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react";
 import Graph from './graph'
+import { Toggle } from "./ui/toggle";
 
 interface NodeType{
 	changeType: string,
@@ -40,7 +41,7 @@ interface NodeData {
 
 const Switcher = () => {
 	const accessibility_type_lower = ["img_alt", "img_contrast",  "page_contrast",  "page_navigation",  "page_skip_to_main"]
-	const [accesibilityArr, setAccesibilityArr] = useState<string[]>([])
+	const [accesibilityArr, setAccesibilityArr] = useState<string[]>(accessibility_type_lower);
 	const [nodes, setNodes] = useState<NodeType[]>([]);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [dev, setDev] = useState<boolean>(false);
@@ -137,7 +138,7 @@ const Switcher = () => {
     .then(response => response.json())
     .then(data => {
       setIsLoading(false);
-      setNodes(data.connections);
+      setNodes(data);
     })
 	}
 
@@ -166,15 +167,15 @@ const Switcher = () => {
 		>
 			<div className="overflow-hidden space-y-2">
 			{showDevOptions && accessibility_type_lower.map((atl) => (
-				<div className="flex items-center justify-between" key={atl}>
-				<Label htmlFor={atl} className="text-gray-800 font-thin text-[11pt] dark:text-gray-200">
-				{translate(atl)}
-				</Label>
-				<Switch
+				<div className="" key={atl}>
+				<Toggle
 				id={atl}
-				checked={accesibilityArr.includes(atl)}
-				onCheckedChange={(checked) => handleToggle(atl, checked)}
-				/>
+				variant="outline"
+				pressed={accesibilityArr.includes(atl)}
+				onPressedChange={(checked) => handleToggle(atl, checked)}
+				className="data-[state=on]:bg-[#74B5CC] data-[state=on]:text-white"
+				> {translate(atl)}
+				</Toggle>
 				</div>
 			))}
 			</div>
@@ -189,7 +190,7 @@ const Switcher = () => {
 		</div>
 			</div>}
 
-			{nodes.length > 0 && (
+			{nodes && nodes.length > 0 && (
 				<div className="w-full max-w-4xl">
 					<Graph selectedNode={selectedNode} setSelectedNode={setSelectedNode} nodes={nodes} />
 				</div>

@@ -415,7 +415,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 			<div className="cursor-pointer p-2 pointer-events-auto"> {/* Add padding for touch target */}
 				<Lightbulb
 			className="w-6 h-6 text-[#333348]"
-			fill={popOverOpen ? "#111" : "none"}
+			fill={popOverOpen ? "#ADD8E6" : "none"}
 			/>
 			</div>
 			</PopoverTrigger>
