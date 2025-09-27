@@ -110,6 +110,29 @@ def extract_json_from_response(text: str):
     return None
 
 
+def build_connections(corrections: list[dict], min_connections=2, max_connections=3) -> list[dict]:
+    from collections import defaultdict
+    grouped = defaultdict(list)
+
+    for i, correction in enumerate(corrections):
+        grouped[correction["changeType"]].append((i, correction))
+
+    for group in grouped.values():
+        _ = [idx for idx, _ in group]
+        for i, (_, current_correction) in enumerate(group):
+            connections = []
+            for offset in range(1, max_connections + 1):
+                other_idx = (i + offset) % len(group)
+                if other_idx == i:
+                    continue
+                connections.append(group[other_idx][0])
+                if len(connections) >= max_connections:
+                    break
+            current_correction["connections"] = connections[:max(len(connections), min_connections)]
+
+    return corrections
+
+
 async def run_check(check: CheckType, html: str):
     prompt_text = prompt[check] + html
 
@@ -147,4 +170,5 @@ async def index(request: AltimateRequest):
     results = await asyncio.gather(*tasks)
 
     corrections = [item for sublist in results if sublist for item in sublist]
-    return corrections
+    connected_corrections = build_connections(corrections)
+    return connected_corrections
