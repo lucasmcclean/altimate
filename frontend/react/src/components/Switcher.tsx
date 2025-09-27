@@ -131,7 +131,7 @@ const Switcher = () => {
       },
       body: JSON.stringify({
         html: rawHtml,
-        requested_checks: accesibilityArr
+        requestedChecks: accesibilityArr
       })
     })
     .then(response => response.json())
