@@ -124,7 +124,7 @@ const Switcher = () => {
     setError(null); 
     setIsLoading(true);
     const rawHtml = document.body.innerHTML;
-    fetch('http://localhost:8000/', {
+    await fetch('http://localhost:8000/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -185,6 +185,7 @@ const Switcher = () => {
 		<Button className="w-full btn-gradient-hover" onClick={makeAccessible} disabled={isLoading}>
 		{isLoading ? 'Loading...' : 'Make Accessible ✦'}
 		</Button>
+        <img src="../../portfolio/static/portrait.png" />
 		</div>
 			</div>}
 
