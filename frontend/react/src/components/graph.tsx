@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button } from './ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Lightbulb } from 'lucide-react';
 import * as d3 from 'd3';
-import { Textarea } from './ui/textarea';
 
 // Type definitions
 type ChangeType = 
@@ -23,8 +15,7 @@ interface NodeData {
   changeType: ChangeType;
   descriptionText: string;
   querySelector: string;
-	replacementHTML: string;
-  connections: number[];
+  connections: string[];
   size: number;
   color: string;
   group: number;
@@ -54,10 +45,9 @@ interface GraphProps {
     changeType: ChangeType;
     descriptionText: string;
     querySelector: string;
-		replacementHTML: string;
-    connections: number[];
+    connections: string[];
   }>;
-	selectedNode: NodeData;
+	selectedNode: any;
 	setSelectedNode: any;
 }
 
@@ -92,7 +82,7 @@ const getChangeTypeGroup = (changeType: ChangeType): number => {
 };
 
 const getChangeTypeColor = (changeType: ChangeType): string => {
-  const colors = ['#37B3B4', '#00779D', '#4F6B8D', '#98C4FB', '#6672C5'];
+  const colors = ['#64748b', '#dc2626', '#2563eb', '#059669', '#7c3aed'];
   return colors[changeTypes.indexOf(changeType) % colors.length];
 };
 
@@ -118,7 +108,6 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
         id: `${index}`,
         changeType: node.changeType,
         descriptionText: node.descriptionText,
-				replacementHTML: node.replacementHTML,
         querySelector: node.querySelector,
         connections: node.connections,
         size: 8,
@@ -240,7 +229,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
           if (targetId === d.id) connectedNodes.add(sourceId);
         });
         
-        node.style("opacity", (n: TexTexttNodeData) => connectedNodes.has(n.id) ? 1 : 0.3);
+        node.style("opacity", (n: NodeData) => connectedNodes.has(n.id) ? 1 : 0.3);
         link.style("opacity", (l: LinkData) => {
           const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
           const targetId = typeof l.target === 'object' ? l.target.id : l.target;
@@ -326,7 +315,6 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   const [showOptionsBar, setShowOptionsBar] = useState(false);
   const [slideInOptionsBar, setSlideInOptionsBar] = useState(false);
   const [optionsBarNode, setOptionsBarNode] = useState<NodeData | null>(null);
-	const [popOverOpen, setPopOverOpen] = useState<Boolean>(false);
 
   useEffect(() => {
     if (selectedNode) {
@@ -341,21 +329,6 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       return () => clearTimeout(hideTimeout);
     }
   }, [selectedNode]);
-
-	async function executeChange(querySelector: string, replacementHTML: string) {
-		console.log(querySelector, replacementHTML);
-		console.log(selectedNode);
-		const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
-
-    chrome.scripting.executeScript({
-        target: {tabId: tab.id},
-        function: (selector: string, html: string) => {
-            const elem = document.querySelector(selector);
-            if(elem) elem.outerHTML = html;
-        },
-        args: [querySelector, replacementHTML]
-    });
-	}
 
   return (
     <div className="w-full h-screen bg-gray-100 text-white relative overflow-hidden">
@@ -374,63 +347,29 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
             <p className="text-[#5C5C6D] leading-relaxed">{optionsBarNode.descriptionText}</p>
           </div>
           
-					<div className="border-t border-gray-600 p-4 bg-gray-750">
-					<p className="text-md text-gray-500 mb-3 font-mono break-all">
-					{optionsBarNode.querySelector}
-					</p>
-					<div className='flex justify-around'>
-					<button
-					onClick={() => setSelectedNode(null)}
-					className="w-2/5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors font-medium btn-gradient-hover"
-					>
-					Close
-					</button>
-					<Button
-					onClick={() => executeChange(selectedNode.querySelector, selectedNode.replacementHTML)}
-					variant="outline"
-					className="w-2/5 text-black"
-					>
-					Execute 
-					</Button>
-					</div>
-					</div>
-					</div>
-			)}
-			<div className='w-full flex justify-center flex-col items-center h-[40%] bottom-6 absolute bg-transparent pointer-events-none'>
-			<Textarea className='w-[80%] h-[50%] text-black pointer-events-none border-1 border-[#6AB3DC]' />
-			</div>
+          <div className="border-t border-gray-600 p-4 bg-gray-750">
+            <p className="text-md text-gray-500 mb-3 font-mono break-all">
+              {optionsBarNode.querySelector}
+            </p>
+            <button
+              onClick={() => setSelectedNode(null)}
+              className="w-full px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors font-medium btn-gradient-hover"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
-			<div className='w-full flex justify-start flex-col items-start h-[40%] left-4 top-4 absolute bg-transparent pointer-events-none'>
-			<Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
-			<PopoverTrigger asChild>
-			{/* Remove Button wrapper to avoid size constraints */}
-			<div className="cursor-pointer p-2 pointer-events-auto"> {/* Add padding for touch target */}
-				<Lightbulb
-			className="w-6 h-6 text-[#333348]"
-			fill={popOverOpen ? "#111" : "none"}
-			/>
-			</div>
-			</PopoverTrigger>
-			<PopoverContent 
-			side="right" 
-			align="start"
-			sideOffset={10} // Adds space between icon and popover
-			className="w-64" // Optional: control popover width
-			>
-			<p>This is the popover content!</p>
-			</PopoverContent>
-			</Popover>
-			</div>
-			{/* SVG Graph */}
-			<svg
-			ref={svgRef}
-			width={dimensions.width}
-			height={dimensions.height}
-			className="w-full h-full"
-			>
-			</svg>
-			</div>
-	);
+      {/* SVG Graph */}
+      <svg
+        ref={svgRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        className="w-full h-full"
+      />
+    </div>
+  );
 };
 
 export default Graph;
