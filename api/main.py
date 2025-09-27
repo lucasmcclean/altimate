@@ -1,12 +1,13 @@
 import asyncio
 import json
+import re
 
 from fastapi import FastAPI, HTTPException
 from google.genai.types import Part, UserContent
 
 from .agent import altimate_agent
 from .agent.utils import get_agent_response
-from .altimate_types import AltimateRequest, AccessibilityCorrection
+from .agent.altimate_types import AltimateRequest, AccessibilityCorrection
 
 from .agent.parallel import build_parallel_agent
 
@@ -47,7 +48,10 @@ async def request_corrections(request: AltimateRequest):
         raise HTTPException(status_code=504, detail="AI agent timed out")
 
     try:
-        corrections_raw = json.loads(agent_response)
+        match = re.search(r"\[\s*{.*?}\s*\]", agent_response, re.DOTALL)
+        if not match:
+            raise ValueError("No JSON array found in agent response")
+        corrections_raw = json.loads(match.group(0))
         corrections = [
             AccessibilityCorrection(**item) for item in corrections_raw
         ]

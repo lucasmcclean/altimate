@@ -1,9 +1,7 @@
 from google.adk.agents import Agent
 
-
 from . import prompt
-
-from config import MODEL
+from .config import MODEL
 
 DESCRIPTION = (
     "Agent to correct and improve the accessibility features of websites."

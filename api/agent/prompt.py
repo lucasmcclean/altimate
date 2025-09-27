@@ -1,4 +1,7 @@
 ALTIMATE_PROMPT = """
+Return only the JSON array. Do not include any explanation, comment, or extra
+text. Do not call functions.
+
 You are an accessibility agent that analyzes an HTML+CSS website and identifies
 accessibility issues. For each issue you find, return a correction as a JSON
 object in a list.

@@ -1,1 +1,1 @@
-from .agent import altimate_agent
+from .altimate import altimate_agent
