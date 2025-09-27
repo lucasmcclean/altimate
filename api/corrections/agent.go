@@ -19,16 +19,16 @@ const defaultModel = "gemini-2.0-flash-lite"
 type CheckType int
 
 const (
-	ImgAlt = iota
-	ImgContrast
-	PageContrast
-	PageNavigation
-	PageSkipToMain
+	ImgAlt         = "img_alt"
+	ImgContrast    = "img_contrast"
+	PageContrast   = "page_contrast"
+	PageNavigation = "page_navigation"
+	PageSkipToMain = "page_skip_to_main"
 )
 
 type AltimateRequest struct {
 	HTML            string      `json:"html"`
-	RequestedChecks []CheckType `json:"requested_checks"`
+	RequestedChecks []CheckType `json:"requestedChecks"`
 }
 
 type AccessibilityCorrection struct {
