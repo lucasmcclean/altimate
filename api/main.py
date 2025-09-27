@@ -1,77 +1,33 @@
-import asyncio
+from enum import Enum
+from fastapi import FastAPI
 
-from fastapi import FastAPI, HTTPException
-from google.genai.types import Part, UserContent
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from .altimate import altimate_agent
-from .altimate.utils import get_agent_response
-from .altimate.types import AltimateRequest
-from .altimate.parallel import build_parallel_agent
+from agents.corrections_agent import parallel_agent
+
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Vite and Create React App default ports
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, DELETE, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+class CheckType(str, Enum):
+    IMG_ALT = "img_alt"
+    IMG_CONTRAST = "img_contrast"
+    PAGE_CONTRAST = "page_contrast"
+    PAGE_NAVIGATION = "page_navigation"
+    PAGE_SKIP_TO_MAIN = "page_skip_to_main"
+
+class AltimateRequest(BaseModel):
+    html: str
+    requested_checks: list[CheckType]
+
 @app.post("/")
-async def request_corrections(request: AltimateRequest):
-    from google.adk.runners import InMemoryRunner
-
-    if not request.requested_checks:
-        raise HTTPException(status_code=400, detail="No checks specified")
-
-    prepped_agent = altimate_agent.model_copy(
-        update={
-            "sub_agents": [build_parallel_agent(request.requested_checks)]
-        }
-    )
-
-    runner = InMemoryRunner(agent=prepped_agent)
-
-    session = await runner.session_service.create_session(
-        app_name=runner.app_name, user_id="api_user"
-    )
-
-    content = UserContent(parts=[Part(text=request.html)])
-
-    try:
-        response = await asyncio.wait_for(
-            get_agent_response(runner, session, content), timeout=400
-        )
-    except asyncio.TimeoutError:
-        raise HTTPException(status_code=504, detail="AI agent timed out")
-
-    corrections_raw = []
-    try:
-        corrections = response.get("default", "")
-        match = re.search(r"\[\s*{.*?}\s*\]", corrections, re.DOTALL)
-        if not match:
-            raise ValueError("No JSON array found in 'default' output")
-        corrections_raw = json.loads(match.group(0))
-        corrections = [
-            AccessibilityCorrection(**item) for item in corrections_raw
-        ]
-    except Exception as e:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Agent response format invalid: {e}"
-        )
-
-    summary = response.get("summary", "").strip()
-
-    if not corrections:
-        raise HTTPException(
-            status_code=204,
-            detail="No accessibility corrections found"
-        )
-
-    return {
-        "corrections": corrections,
-        "summary": summary
-    }
+def get_data(request: AltimateRequest):
+    corrections_agent = parallel_agent(request.requested_checks)
