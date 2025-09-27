@@ -4,24 +4,28 @@
 	"description": "A Chrome extension to help with accessibility.",
 	"version": "1.0",
 	"icons": {
-		"16": "logo-16.png",
-		"32": "logo-32.png", 
-		"48": "logo-48.png",
-		"128": "logo-128.png"
+		"16": "logo.png",
+		"32": "logo.png", 
+		"48": "logo.png",
+		"128": "logo.png"
 	},
 
 	"action": {
 		"default_popup": "index.html",
 		"default_title": "My Extension",
 		"default_icon": {
-			"16": "logo-16.png",
-			"32": "logo-32.png",
-			"48": "logo-48.png",
-			"128": "logo-128.png"
+			"16": "logo.png",
+			"32": "logo.png",
+			"48": "logo.png",
+			"128": "logo.png"
 		}
 	},  "permissions": [
 		"activeTab",
-		"scripting"
+		"scripting",
+		"tabs"
+	],
+	"host_permissions": [
+		"<all_urls>"
 	],
 	"background": {
 		"service_worker": "background.js"
