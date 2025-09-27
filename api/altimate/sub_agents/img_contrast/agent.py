@@ -1,8 +1,8 @@
 from google.adk.agents import Agent
 
-from agent.config import MODEL
+from altimate.config import MODEL
 
-from agent.prompt import ALTIMATE_PROMPT
+from altimate.prompt import ALTIMATE_PROMPT
 
 img_contrast_agent = Agent(
     name="img_contrast_agent",
