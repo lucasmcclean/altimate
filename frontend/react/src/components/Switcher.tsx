@@ -150,24 +150,24 @@ const Switcher = () => {
 		<img src='/FULL_LOGO.webp' className="w-[70%]" />
 		</div>
 		<Separator />
-		<div className="w-[90%] border self-center mt-20 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+		<div className="w-[90%] border border-gray-800 self-center mt-20 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
 		<div className="flex flex-col items-start justify-between mb-6">
 		<p className="text-3xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
 		<div className="flex items-center space-x-2 mt-4">
-		<Label htmlFor="dev-mode" className="font-bold text-md">{dev ? 'Developer' : 'User'}</Label>
+		<Label htmlFor="dev-mode" className="font-bold text-xl">{dev ? 'Developer' : 'User'}</Label>
 		<Switch id="dev-mode" checked={dev} onCheckedChange={setDev} />
 		</div>
 		</div>
 
 		<div
-			className={`grid overflow-hidden transition-all duration-300 ease-in-out ${
+			className={`grid overflow-hidden transition-all my-4 duration-300 ease-in-out ${
 				dev ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
 			}`}
 		>
-			<div className="overflow-hidden space-y-4">
+			<div className="overflow-hidden space-y-2">
 			{showDevOptions && accessibility_type_lower.map((atl) => (
 				<div className="flex items-center justify-between" key={atl}>
-				<Label htmlFor={atl} className="text-gray-800 dark:text-gray-200">
+				<Label htmlFor={atl} className="text-gray-800 font-thin text-[11pt] dark:text-gray-200">
 				{translate(atl)}
 				</Label>
 				<Switch
@@ -182,7 +182,7 @@ const Switcher = () => {
 
     {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
 
-		<Button className="w-full mt-6 btn-gradient-hover" onClick={makeAccessible} disabled={isLoading}>
+		<Button className="w-full btn-gradient-hover" onClick={makeAccessible} disabled={isLoading}>
 		{isLoading ? 'Loading...' : 'Make Accessible ✦'}
 		</Button>
 		</div>

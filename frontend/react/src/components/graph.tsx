@@ -108,6 +108,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   const svgRef = useRef<SVGSVGElement>(null);
   const nodeRef = useRef<d3.Selection<SVGCircleElement, NodeData, SVGGElement, unknown> | null>(null);
   const labelRef = useRef<d3.Selection<SVGTextElement, NodeData, SVGGElement, unknown> | null>(null);
+  const linkRef = useRef<d3.Selection<SVGLineElement, LinkData, SVGGElement, unknown> | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   // Sample data structure similar to Obsidian notes
@@ -191,6 +192,8 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .attr("stroke-opacity", 0.6)
       .attr("stroke-width", 2);
 
+    linkRef.current = link;
+
     const node = container.append("g")
       .selectAll("circle")
       .data(filteredNodes)
@@ -200,6 +203,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .attr("stroke", "#fff")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
+      .style("opacity", d => d.id === selectedNode?.id || !selectedNode ? 1 : 0.3)
       .call(d3.drag<SVGCircleElement, NodeData>()
         .on("start", dragstarted)
         .on("drag", dragged)
@@ -216,7 +220,8 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .attr("text-anchor", "middle")
       .attr("dy", ".35em")
       .style("pointer-events", "none")
-      .style("user-select", "none");
+      .style("user-select", "none")
+      .style("opacity", d => d.id === selectedNode?.id || !selectedNode ? 1 : 0.3);
 
     node
       .on("click", (event: MouseEvent, d: NodeData) => {
@@ -230,23 +235,13 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
           .attr("r", d.id === selectedNode?.id ? d.size * 2.2 : d.size * 1.2) // Hover effect: slightly larger than base
           .attr("stroke-width", 3);
         
-        // Highlight connected nodes
-        const connectedNodes = new Set<string>();
-        filteredLinks.forEach(l => {
-          const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
-          const targetId = typeof l.target === 'object' ? l.target.id : l.target;
-          
-          if (sourceId === d.id) connectedNodes.add(targetId);
-          if (targetId === d.id) connectedNodes.add(sourceId);
-        });
-        
-        node.style("opacity", (n: TexTexttNodeData) => connectedNodes.has(n.id) ? 1 : 0.3);
+        node.style("opacity", (n) => n.id === d.id ? 1 : (selectedNode ? 0.3 : 1));
         link.style("opacity", (l: LinkData) => {
           const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
           const targetId = typeof l.target === 'object' ? l.target.id : l.target;
-          return sourceId === d.id || targetId === d.id ? 1 : 0.1;
+          return (sourceId === d.id || targetId === d.id) ? 1 : (selectedNode ? 0.1 : 0.6);
         });
-        label.style("opacity", (n: NodeData) => connectedNodes.has(n.id) || n.id === d.id ? 1 : 0.3);
+        label.style("opacity", (n: NodeData) => n.id === d.id ? 1 : (selectedNode ? 0.3 : 1));
       })
       .on("mouseout", function(event: MouseEvent, d: NodeData) {
         d3.select(this)
@@ -255,9 +250,15 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
           .attr("r", d.id === selectedNode?.id ? d.size * 2 : d.size) // Revert to base size (selected or unselected)
           .attr("stroke-width", 2);
         
-        node.style("opacity", 1);
-        link.style("opacity", 0.6);
-        label.style("opacity", 1);
+        if (selectedNode) {
+          node.style("opacity", (n) => n.id === selectedNode.id ? 1 : 0.3);
+          link.style("opacity", 0.1);
+          label.style("opacity", (n) => n.id === selectedNode.id ? 1 : 0.3);
+        } else {
+          node.style("opacity", 1);
+          link.style("opacity", 0.6);
+          label.style("opacity", 1);
+        }
       });
 
     svg.on("click", () => setSelectedNode(null));
@@ -299,11 +300,21 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
     labelRef.current = label; // Store label selection
 
     return () => simulation.stop();
-  }, [graphData, dimensions]);
+  }, [selectedNode, graphData, dimensions]);
 
   useEffect(() => {
     if (nodeRef.current) {
-      nodeRef.current.attr("r", d => d.id === selectedNode?.id ? d.size * 2 : d.size);
+      nodeRef.current
+        .attr("r", d => d.id === selectedNode?.id ? d.size * 2 : d.size)
+        .style("opacity", d => d.id === selectedNode?.id ? 1 : 0.3);
+    }
+
+    if (labelRef.current) {
+      labelRef.current.style("opacity", d => d.id === selectedNode?.id ? 1 : 0.3);
+    }
+
+    if (linkRef.current) {
+      linkRef.current.style("opacity", selectedNode ? 0.1 : 0.6);
     }
 
     if (selectedNode && svgRef.current && zoomRef.current) {
