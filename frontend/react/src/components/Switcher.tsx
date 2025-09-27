@@ -2,7 +2,7 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "./ui/button";
 import { Label } from "@/components/ui/label"
 import { useEffect, useState } from "react";
-import Graph from './graph.jsx'
+import Graph from './graph'
 
 interface NodeType{
 	changeType: string,
@@ -52,14 +52,14 @@ const Switcher = () => {
 		const rawHtml = document.body.innerHTML;
 
 		try {
-			const response = await fetch('https://your-api-endpoint.com/endpoint', {
+			const response = await fetch('http://localhost:8000', {
 				method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
 				html: rawHtml,
-				request_checks: accesibilityArr // ← make sure this variable exists!
+				requested_checks: accesibilityArr // ← make sure this variable exists!
 			})
 			});
 
