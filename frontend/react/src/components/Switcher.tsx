@@ -50,16 +50,21 @@ const Switcher = () => {
 
 	const makeAccessible = async() => {
 		const rawHtml = document.body.innerHTML;
+		console.log(
+			JSON.stringify({
+				html: rawHtml,
+				RequestedChecks: accesibilityArr 
+			}))
 
 		try {
-			const response = await fetch('http://localhost:8000', {
+			const response = await fetch('http://localhost:8000/debug', {
 				method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
 				html: rawHtml,
-				requested_checks: accesibilityArr // ← make sure this variable exists!
+				requested_checks: accesibilityArr 
 			})
 			});
 
@@ -67,11 +72,11 @@ const Switcher = () => {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			const data = await response.json(); // ← this is your actual JSON response
-			setNodes(data); // pass the parsed data to your state setter
+			const data = await response.json();
+			setNodes(data.connections); 
 		} catch (error) {
 			console.error('Fetch failed:', error);
-			// Optionally handle error in UI (e.g., setError(true))
+			
 		}
 	}
 
