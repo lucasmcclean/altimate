@@ -12,6 +12,8 @@ from .sub_agents.page_contrast import page_contrast_agent
 from .sub_agents.page_navigation import page_navigation_agent
 from .sub_agents.page_skip_to_main import page_skip_to_main_agent
 
+from .summary import build_summary_agent
+
 AGENT_MAP = {
     ChangeType.IMG_ALT: cast(BaseAgent, img_alt_agent),
     ChangeType.IMG_CONTRAST: cast(BaseAgent, img_contrast_agent),
@@ -25,6 +27,10 @@ def build_parallel_agent(requested_checks: list[ChangeType]) -> ParallelAgent:
     selected_agents = [
         AGENT_MAP[check] for check in requested_checks if check in AGENT_MAP
     ]
+
+    summary_agent = build_summary_agent(requested_checks)
+    selected_agents.append(summary_agent)
+
     return ParallelAgent(
         name="parallel_accessibility_agent",
         sub_agents=selected_agents,

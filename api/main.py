@@ -8,11 +8,9 @@ from google.genai.types import Part, UserContent
 from .altimate import altimate_agent
 from .altimate.utils import get_agent_response
 from .altimate.types import AltimateRequest, AccessibilityCorrection
-
 from .altimate.parallel import build_parallel_agent
 
 app = FastAPI()
-
 
 @app.post("/")
 async def request_corrections(request: AltimateRequest):
@@ -24,7 +22,7 @@ async def request_corrections(request: AltimateRequest):
     prepped_agent = altimate_agent.model_copy(
         update={
             "sub_agents": [build_parallel_agent(request.requested_checks)]
-            }
+        }
     )
 
     runner = InMemoryRunner(agent=prepped_agent)
@@ -36,28 +34,38 @@ async def request_corrections(request: AltimateRequest):
     content = UserContent(parts=[Part(text=request.html)])
 
     try:
-        agent_response = await asyncio.wait_for(
+        response = await asyncio.wait_for(
             get_agent_response(runner, session, content), timeout=10
         )
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="AI agent timed out")
 
+    # Try to extract and parse corrections
+    corrections_raw = []
     try:
-        match = re.search(r"\[\s*{.*?}\s*\]", agent_response, re.DOTALL)
+        corrections = response.get("default", "")
+        match = re.search(r"\[\s*{.*?}\s*\]", corrections, re.DOTALL)
         if not match:
-            raise ValueError("No JSON array found in agent response")
+            raise ValueError("No JSON array found in 'default' output")
         corrections_raw = json.loads(match.group(0))
         corrections = [
             AccessibilityCorrection(**item) for item in corrections_raw
         ]
     except Exception as e:
         raise HTTPException(
-            status_code=422, detail=f"Agent response format invalid: {e}"
+            status_code=422,
+            detail=f"Agent response format invalid: {e}"
         )
+
+    summary = response.get("summary", "").strip()
 
     if not corrections:
         raise HTTPException(
-            status_code=204, detail="No accessibility corrections found"
+            status_code=204,
+            detail="No accessibility corrections found"
         )
 
-    return {"corrections": [c.model_dump() for c in corrections]}
+    return {
+        "corrections": [c.model_dump() for c in corrections],
+        "summary": summary
+    }
