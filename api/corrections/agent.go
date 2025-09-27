@@ -16,7 +16,7 @@ import (
 
 const defaultModel = "gemini-2.0-flash-lite"
 
-type CheckType int
+type CheckType string
 
 const (
 	ImgAlt         = "img_alt"
