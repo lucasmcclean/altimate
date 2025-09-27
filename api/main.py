@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import asyncio
 from enum import Enum
 
 from fastapi import FastAPI
@@ -35,62 +36,58 @@ BASE_PROMPT = """
         change types.
     - Propose minimal, semantic HTML corrections that improve accessibility.
     - Return only the list of JSON objects; no additional explanation or comments.
+    - Please answer briefly and rapidly (but accurately).
 
     Each correction must be formed precisely as such:
 """
 
 prompt: dict[CheckType, str] = {
-    CheckType.IMG_ALT: BASE_PROMPT
-    + """
+    CheckType.IMG_ALT: BASE_PROMPT + """
         {
             "changeType": Enum[
                 "img_alt_added",
                 "img_alt_altered"
             ],
-            "querySelector": string,      // CSS selector targeting the affected node
-            "replacementHTML": string,    // The full replacement HTML element
-            "connections": array[int],    // Indexes of related nodes in the input
-            "descriptionText": string     // Explanation of the issue and recommended fix
+            "querySelector": string,
+            "replacementHTML": string,
+            "connections": array[int],
+            "descriptionText": string
         }
         """,
-    CheckType.IMG_CONTRAST: BASE_PROMPT
-    + """
+    CheckType.IMG_CONTRAST: BASE_PROMPT + """
         {
             "changeType": "img_contrast_altered",
-            "querySelector": string,      // CSS selector targeting the affected node
-            "replacementHTML": string,    // The full replacement HTML element
-            "connections": array[int],    // Indexes of related nodes in the input
-            "descriptionText": string     // Explanation of the issue and recommended fix
+            "querySelector": string,
+            "replacementHTML": string,
+            "connections": array[int],
+            "descriptionText": string
         }
         """,
-    CheckType.PAGE_CONTRAST: BASE_PROMPT
-    + """
+    CheckType.PAGE_CONTRAST: BASE_PROMPT + """
         {
             "changeType": "page_contrast_altered",
-            "querySelector": string,      // CSS selector targeting the affected node
-            "replacementHTML": string,    // The full replacement HTML element
-            "connections": array[int],    // Indexes of related nodes in the input
-            "descriptionText": string     // Explanation of the issue and recommended fix
+            "querySelector": string,
+            "replacementHTML": string,
+            "connections": array[int],
+            "descriptionText": string
         }
         """,
-    CheckType.PAGE_NAVIGATION: BASE_PROMPT
-    + """
+    CheckType.PAGE_NAVIGATION: BASE_PROMPT + """
         {
             "changeType": "page_navigation_altered",
-            "querySelector": string,      // CSS selector targeting the affected node
-            "replacementHTML": string,    // The full replacement HTML element
-            "connections": array[int],    // Indexes of related nodes in the input
-            "descriptionText": string     // Explanation of the issue and recommended fix
+            "querySelector": string,
+            "replacementHTML": string,
+            "connections": array[int],
+            "descriptionText": string
         }
         """,
-    CheckType.PAGE_SKIP_TO_MAIN: BASE_PROMPT
-    + """
+    CheckType.PAGE_SKIP_TO_MAIN: BASE_PROMPT + """
         {
             "changeType": "page_skip_to_main_added",
-            "querySelector": string,      // CSS selector targeting the affected node
-            "replacementHTML": string,    // The full replacement HTML element
-            "connections": array[int],    // Indexes of related nodes in the input
-            "descriptionText": string     // Explanation of the issue and recommended fix
+            "querySelector": string,
+            "replacementHTML": string,
+            "connections": array[int],
+            "descriptionText": string
         }
         """,
 }
@@ -113,32 +110,41 @@ def extract_json_from_response(text: str):
     return None
 
 
+async def run_check(check: CheckType, html: str):
+    prompt_text = prompt[check] + html
+
+    try:
+        res = await asyncio.to_thread(
+            client.models.generate_content,
+            model=MODEL,
+            contents=prompt_text
+        )
+
+        if (
+            res
+            and res.candidates
+            and res.candidates[0].content
+            and res.candidates[0].content.parts
+            and res.candidates[0].content.parts[0]
+            and res.candidates[0].content.parts[0].text
+        ):
+            correction = extract_json_from_response(
+                res.candidates[0].content.parts[0].text
+            )
+            return correction
+    except Exception as e:
+        print(f"Error processing check {check}: {e}")
+
+    return None
+
+
 @app.post("/")
-def index(request: AltimateRequest):
+async def index(request: AltimateRequest):
     html = request.html
     requested_checks = request.requestedChecks
-    corrections = []
 
-    for check in requested_checks:
-        prompt_text = prompt[check] + html
-        res = client.models.generate_content(model=MODEL, contents=prompt_text)
+    tasks = [run_check(check, html) for check in requested_checks]
+    results = await asyncio.gather(*tasks)
 
-        try:
-            if (
-                res
-                and res.candidates
-                and res.candidates[0].content
-                and res.candidates[0].content.parts
-                and res.candidates[0].content.parts[0]
-                and res.candidates[0].content.parts[0].text
-            ):
-                correction = extract_json_from_response(
-                    res.candidates[0].content.parts[0].text
-                )
-                if correction:
-                    corrections.append(correction)
-        except Exception as e:
-            print(f"Error processing check {check}: {e}")
-            continue
-
+    corrections = [item for sublist in results if sublist for item in sublist]
     return corrections
