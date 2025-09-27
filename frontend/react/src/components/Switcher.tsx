@@ -145,12 +145,14 @@ const Switcher = () => {
 	return (
 		<div className="w-screen flex items-center justify-around min-h-screen bg-white dark:bg-gray-900">
 		{showSwitcherBar && 
-			<div className={`w-[42%] flex flex-col h-screen transition-transform duration-300 ease-out ${slideInSwitcherBar ? 'translate-x-0' : '-translate-x-full'}`}> 
-		<h1 className="my-4 w-full flex justify-center items-center"> AltiMate </h1>
+			<div className={`w-[60%] flex flex-col h-screen transition-transform duration-300 ease-out ${slideInSwitcherBar ? 'translate-x-0' : '-translate-x-full'}`}> 
+		<div className="w-full flex justify-center items-center">
+		<img src='/FULL_LOGO.webp' className="w-[70%]" />
+		</div>
 		<Separator />
-		<div className="w-full self-center mt-20 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+		<div className="w-[90%] border self-center mt-20 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
 		<div className="flex flex-col items-start justify-between mb-6">
-		<p className="text-4xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
+		<p className="text-3xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
 		<div className="flex items-center space-x-2 mt-4">
 		<Label htmlFor="dev-mode" className="font-bold text-md">{dev ? 'Developer' : 'User'}</Label>
 		<Switch id="dev-mode" checked={dev} onCheckedChange={setDev} />
