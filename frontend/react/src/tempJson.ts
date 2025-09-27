@@ -1,143 +1,143 @@
 const nodes = [
   {
-    "changeType": "REPLACE",
-    "querySelector": "#header",
-    "replacementHTML": "<header><h1>Updated Header</h1></header>",
+    "changeType": "img_alt_added",
+    "querySelector": "img.hero-image",
+    "replacementHTML": "<img class='hero-image' src='hero.jpg' alt='Company headquarters at sunset'>",
     "connections": [2, 5],
-    "descriptionText": "Replaces the main header with a new styled version."
+    "descriptionText": "Added descriptive alt text to hero image for accessibility."
   },
   {
-    "changeType": "INSERT_AFTER",
-    "querySelector": ".sidebar",
-    "replacementHTML": "<div class='ad-banner'>Advertisement</div>",
+    "changeType": "img_alt_altered",
+    "querySelector": "img.product-thumbnail",
+    "replacementHTML": "<img class='product-thumbnail' src='product.jpg' alt='Blue wireless headphones with noise cancellation'>",
     "connections": [1, 3],
-    "descriptionText": "Inserts an ad banner after the sidebar."
+    "descriptionText": "Improved alt text on product image for better screen reader experience."
   },
   {
-    "changeType": "REMOVE",
-    "querySelector": ".deprecated-notice",
-    "replacementHTML": "",
+    "changeType": "img_contrast_altered",
+    "querySelector": "img.logo",
+    "replacementHTML": "<img class='logo' src='logo-high-contrast.png' alt='Company logo'>",
     "connections": [2, 4],
-    "descriptionText": "Removes outdated deprecation notices."
+    "descriptionText": "Replaced logo with higher-contrast version for better visibility."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": "nav ul",
-    "replacementHTML": "<ul><li><a href='/home'>Home</a></li><li><a href='/about'>About</a></li></ul>",
+    "changeType": "page_contrast_altered",
+    "querySelector": "body",
+    "replacementHTML": "<body class='high-contrast-theme'>",
     "connections": [3, 6],
-    "descriptionText": "Updates navigation menu items."
+    "descriptionText": "Applied high-contrast theme to entire page for improved readability."
   },
   {
-    "changeType": "INSERT_BEFORE",
-    "querySelector": "#footer",
-    "replacementHTML": "<div class='legal-notice'>© 2024 Example Corp</div>",
+    "changeType": "page_navigation_altered",
+    "querySelector": "nav.main-nav",
+    "replacementHTML": "<nav class='main-nav' aria-label='Main'><ul><li><a href='/'>Home</a></li><li><a href='/about'>About</a></li></ul></nav>",
     "connections": [1, 7],
-    "descriptionText": "Adds a legal notice before the footer."
+    "descriptionText": "Restructured main navigation with proper ARIA labels and semantic markup."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": ".hero-banner img",
-    "replacementHTML": "<img src='/new-hero.jpg' alt='New Hero Image'>",
+    "changeType": "page_skip_to_main_added",
+    "querySelector": "body",
+    "replacementHTML": "<a class='skip-link' href='#main-content'>Skip to main content</a>",
     "connections": [4, 8],
-    "descriptionText": "Swaps hero image with seasonal promotion."
+    "descriptionText": "Added skip-to-main-content link at top of page for keyboard users."
   },
   {
-    "changeType": "REMOVE",
-    "querySelector": "#beta-badge",
-    "replacementHTML": "",
+    "changeType": "img_alt_added",
+    "querySelector": "img.team-photo",
+    "replacementHTML": "<img class='team-photo' src='team.jpg' alt='Our diverse engineering team smiling in the office'>",
     "connections": [5, 9],
-    "descriptionText": "Removes beta label now that feature is stable."
+    "descriptionText": "Added meaningful alt text to team photo."
   },
   {
-    "changeType": "INSERT_AFTER",
-    "querySelector": ".product-list",
-    "replacementHTML": "<div class='promo-section'>Limited Time Offer!</div>",
+    "changeType": "img_alt_altered",
+    "querySelector": "img.icon-search",
+    "replacementHTML": "<img class='icon-search' src='search-icon.svg' alt='Search'>",
     "connections": [6, 10],
-    "descriptionText": "Adds promotional section after product listings."
+    "descriptionText": "Updated alt text on search icon from 'icon' to 'Search'."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": "form#contact",
-    "replacementHTML": "<form id='contact'><input type='email' placeholder='Your Email'><button>Subscribe</button></form>",
+    "changeType": "img_contrast_altered",
+    "querySelector": "img.chart-data",
+    "replacementHTML": "<img class='chart-data' src='chart-high-contrast.png' alt='Sales growth chart Q1–Q4'>",
     "connections": [7, 11],
-    "descriptionText": "Simplifies contact form to email subscription."
+    "descriptionText": "Enhanced contrast of data visualization image for accessibility compliance."
   },
   {
-    "changeType": "INSERT_BEFORE",
-    "querySelector": ".comments-section",
-    "replacementHTML": "<h3>Join the Discussion</h3>",
+    "changeType": "page_contrast_altered",
+    "querySelector": ".content-area",
+    "replacementHTML": "<div class='content-area high-contrast'>",
     "connections": [8, 12],
-    "descriptionText": "Adds heading before comments area."
+    "descriptionText": "Increased text-background contrast in main content area."
   },
   {
-    "changeType": "REMOVE",
-    "querySelector": ".old-tracking-pixel",
-    "replacementHTML": "",
+    "changeType": "page_navigation_altered",
+    "querySelector": "footer nav",
+    "replacementHTML": "<nav aria-label='Footer'><ul><li><a href='/privacy'>Privacy</a></li><li><a href='/terms'>Terms</a></li></ul></nav>",
     "connections": [9, 13],
-    "descriptionText": "Removes legacy analytics tracking code."
+    "descriptionText": "Improved footer navigation semantics and labeling."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": ".user-avatar",
-    "replacementHTML": "<img class='user-avatar' src='/default-avatar.png' alt='User Avatar'>",
+    "changeType": "page_skip_to_main_added",
+    "querySelector": "#top-bar",
+    "replacementHTML": "<div id='top-bar'><a class='skip-link' href='#primary'>Skip to primary content</a></div>",
     "connections": [10, 14],
-    "descriptionText": "Sets default avatar for users without profile picture."
+    "descriptionText": "Inserted skip link just after top utility bar."
   },
   {
-    "changeType": "INSERT_AFTER",
-    "querySelector": "#main-content",
-    "replacementHTML": "<aside class='related-articles'>Related Posts</aside>",
+    "changeType": "img_alt_added",
+    "querySelector": "img.diagram-accessibility",
+    "replacementHTML": "<img src='accessibility-diagram.png' alt='Flowchart showing screen reader navigation path through page elements'>",
     "connections": [11, 15],
-    "descriptionText": "Adds related articles sidebar after main content."
+    "descriptionText": "Added detailed alt text to accessibility diagram."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": "button.cta-primary",
-    "replacementHTML": "<button class='cta-primary'>Get Started Now</button>",
+    "changeType": "img_alt_altered",
+    "querySelector": "img.user-avatar",
+    "replacementHTML": "<img class='user-avatar' src='avatar.jpg' alt='Profile picture of Alex Johnson'>",
     "connections": [12, 16],
-    "descriptionText": "Updates primary call-to-action button text."
+    "descriptionText": "Replaced generic 'user image' alt text with user's actual name."
   },
   {
-    "changeType": "REMOVE",
-    "querySelector": ".debug-info",
-    "replacementHTML": "",
+    "changeType": "img_contrast_altered",
+    "querySelector": "img.button-icon",
+    "replacementHTML": "<img class='button-icon' src='download-icon-hc.svg' alt='Download'>",
     "connections": [13, 17],
-    "descriptionText": "Removes debug information from production build."
+    "descriptionText": "Updated icon image to meet minimum contrast ratio requirements."
   },
   {
-    "changeType": "INSERT_BEFORE",
-    "querySelector": ".pricing-table",
-    "replacementHTML": "<h2>Choose Your Plan</h2>",
+    "changeType": "page_contrast_altered",
+    "querySelector": ".form-group label",
+    "replacementHTML": "<label class='form-label high-contrast'>Email Address</label>",
     "connections": [14, 18],
-    "descriptionText": "Adds heading before pricing options."
+    "descriptionText": "Adjusted label text color to improve contrast against background."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": ".social-links",
-    "replacementHTML": "<div class='social-links'><a href='https://twitter.com'>Twitter</a><a href='https://linkedin.com'>LinkedIn</a></div>",
+    "changeType": "page_navigation_altered",
+    "querySelector": ".breadcrumb",
+    "replacementHTML": "<nav aria-label='Breadcrumb'><ol><li><a href='/'>Home</a></li><li>Products</li></ol></nav>",
     "connections": [15, 19],
-    "descriptionText": "Refreshes social media links."
+    "descriptionText": "Converted breadcrumb into proper navigation landmark with ARIA label."
   },
   {
-    "changeType": "INSERT_AFTER",
-    "querySelector": "article.blog-post",
-    "replacementHTML": "<div class='author-bio'>Written by Jane Doe</div>",
+    "changeType": "page_skip_to_main_added",
+    "querySelector": "header",
+    "replacementHTML": "<header><a class='skip-link visually-hidden' href='#content'>Skip to content</a>",
     "connections": [16, 20],
-    "descriptionText": "Adds author bio after each blog post."
+    "descriptionText": "Added visually hidden skip link at start of header."
   },
   {
-    "changeType": "REMOVE",
-    "querySelector": "#temp-banner",
-    "replacementHTML": "",
+    "changeType": "img_alt_added",
+    "querySelector": "img.infographic",
+    "replacementHTML": "<img src='infographic.png' alt='Step-by-step guide to filing a support ticket, showing 4 stages with icons'>",
     "connections": [17, 1],
-    "descriptionText": "Removes temporary event banner after campaign ends."
+    "descriptionText": "Provided comprehensive alt text for complex infographic."
   },
   {
-    "changeType": "REPLACE",
-    "querySelector": ".mobile-menu-toggle",
-    "replacementHTML": "<button class='mobile-menu-toggle' aria-label='Toggle Menu'>☰</button>",
+    "changeType": "img_alt_altered",
+    "querySelector": "img.logo-footer",
+    "replacementHTML": "<img class='logo-footer' src='footer-logo.svg' alt='Acme Inc. – Building accessible digital experiences since 2010'>",
     "connections": [18, 2],
-    "descriptionText": "Improves accessibility of mobile menu toggle."
+    "descriptionText": "Enhanced logo alt text to include company tagline for context."
   }
 ]
 
