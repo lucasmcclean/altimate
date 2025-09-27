@@ -1,4 +1,5 @@
 import { Switch } from "@/components/ui/switch"
+import { Button } from "./ui/button";
 import { Label } from "@/components/ui/label"
 import { useEffect, useState } from "react";
 
@@ -45,6 +46,8 @@ const Switcher = () => {
       <Label htmlFor="type-switch">{translate(atl)}</Label>
     </div>
     ))}
+		<Button className="m-8" onClick={(() => console.log(document.body.innerHTML))}> Make Accessible </Button>
+
     </div>
    
    

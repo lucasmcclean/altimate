@@ -1,11 +1,6 @@
 import Switcher from "./components/Switcher"
 
-
-
-
-
 function App() {
-
   return (
     <>
     <Switcher />
