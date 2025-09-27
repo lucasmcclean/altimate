@@ -92,7 +92,7 @@ prompt: dict[CheckType, str] = {
         """,
 }
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-2.5-flash-lite"
 
 app.add_middleware(
     CORSMiddleware,
