@@ -1,4 +1,4 @@
-const nodes = [
+const nodesTemp = [
   {
     "changeType": "img_alt_added",
     "querySelector": "img.hero-image",
@@ -141,4 +141,4 @@ const nodes = [
   }
 ]
 
-export default nodes;
+export default nodesTemp;

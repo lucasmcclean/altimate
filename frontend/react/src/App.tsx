@@ -1,9 +1,13 @@
-import Switcher from "./components/Switcher"
+import Graph from './components/graph'
+import Switcher from './components/Switcher'
+import nodes from "./tempJson"
 
 function App() {
   return (
     <>
-    <Switcher />
+		<Switcher />
+
+		<Graph nodes={nodes}/>
     </>
   )
 }

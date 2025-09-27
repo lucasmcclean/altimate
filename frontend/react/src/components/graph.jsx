@@ -11,7 +11,7 @@ const getChangeTypeColor = (changeType) => {
 	return ['#64748b', '#dc2626', '#2563eb', '#059669', '#7c3aed'][changeTypes.indexOf(changeType)%6]
 };
 
-function Graph(props){
+export default function Graph(props){
 	let nodes = props.nodes;
   const svgRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -242,5 +242,3 @@ function Graph(props){
     </div>
   );
 };
-
-export default Graph;
