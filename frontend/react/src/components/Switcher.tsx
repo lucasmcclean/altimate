@@ -123,17 +123,22 @@ const Switcher = () => {
 	const makeAccessible = async() => {
     setError(null); // Clear previous errors
     setIsLoading(true);
-		chrome.runtime.sendMessage({ type: "MAKE_ACCESSIBLE", accesibilityArr }, (response) => {
+    const rawHtml = document.body.innerHTML;
+    fetch('http://localhost:8000/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        html: rawHtml,
+        requested_checks: accesibilityArr
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
       setIsLoading(false);
-			if (chrome.runtime.lastError) {
-				console.error(chrome.runtime.lastError.message);
-        setError(`Error: ${chrome.runtime.lastError.message}`);
-			} else if (response && response.error) {
-        setError(`Backend Error: ${response.error}`);
-      } else {
-				setNodes(response.connections);
-			}
-		});
+      setNodes(data.connections);
+    })
 	}
 
 
