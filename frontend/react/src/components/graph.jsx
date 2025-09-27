@@ -1,5 +1,3 @@
-import nodes from '../tempJson';
-
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
@@ -13,8 +11,8 @@ const getChangeTypeColor = (changeType) => {
 	return ['#64748b', '#dc2626', '#2563eb', '#059669', '#7c3aed'][changeTypes.indexOf(changeType)%6]
 };
 
-
-const Graph = () => {
+function Graph(props){
+	let nodes = props.nodes;
   const svgRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
   
