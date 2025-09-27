@@ -1,10 +1,10 @@
 from google.adk.agents import Agent, ParallelAgent
 
-from main import CheckType
+from request import CheckType
 
 MODEL = "gemini-2.0-flash-lite"
 
-img_alt_agent: Agent = Agent(
+img_alt_agent  = Agent(
     name="img_alt_agent",
     model=MODEL,
     description="Fix image alt attributes",
@@ -34,7 +34,7 @@ img_alt_agent: Agent = Agent(
     """,
 )
 
-img_contrast_agent = Agent(
+img_contrast_agent  = Agent(
     name="img_contrast_agent",
     model=MODEL,
     description="Check and fix image contrast issues",
@@ -61,7 +61,7 @@ img_contrast_agent = Agent(
     """,
 )
 
-page_contrast_agent = Agent(
+page_contrast_agent  = Agent(
     name="page_contrast_agent",
     model=MODEL,
     description="Fix image alt attributes",
@@ -73,7 +73,7 @@ page_contrast_agent = Agent(
         Each correction must include:
 
         {
-            "changeType": page_contrast_altered",
+            "changeType": "page_contrast_altered",
             "querySelector": string,      // CSS selector targeting the affected node
             "replacementHTML": string,    // The full replacement HTML element
             "connections": array[int],    // Indexes of related nodes in the input
@@ -144,10 +144,17 @@ page_skip_to_main_agent = Agent(
 
 def parallel_agent(requested_checks: list[CheckType]) -> ParallelAgent:
     sub_agents = []
+
     if CheckType.IMG_ALT in requested_checks:
-        sub_agents.append(CheckType.IMG_ALT)
+        sub_agents.append(img_alt_agent)
     if CheckType.IMG_CONTRAST in requested_checks:
-        sub_agents.append(CheckType.IMG_CONTRAST)
+        sub_agents.append(img_contrast_agent)
+    if CheckType.PAGE_CONTRAST in requested_checks:
+        sub_agents.append(page_contrast_agent)
+    if CheckType.PAGE_NAVIGATION in requested_checks:
+        sub_agents.append(page_navigation_agent)
+    if CheckType.PAGE_SKIP_TO_MAIN in requested_checks:
+        sub_agents.append(page_skip_to_main_agent)
 
     return ParallelAgent(
         name="corrections_sub_agents_manager",
