@@ -47,6 +47,8 @@ interface GraphProps {
     querySelector: string;
     connections: string[];
   }>;
+	selectedNode: any;
+	setSelectedNode: any;
 }
 
 // Simulation node type for D3
@@ -84,11 +86,20 @@ const getChangeTypeColor = (changeType: ChangeType): string => {
   return colors[changeTypes.indexOf(changeType) % colors.length];
 };
 
-const Graph: React.FC<GraphProps> = ({ nodes }) => {
-	console.log(nodes);
+const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) => {
+  if (!nodes || Object.keys(nodes).length === 0) {
+    return (
+      <div className="flex items-center justify-center w-full h-full bg-gray-900 text-white">
+        <p>No data available to display the graph.</p>
+      </div>
+    );
+  }
+	
   const svgRef = useRef<SVGSVGElement>(null);
-  const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
-  
+  const nodeRef = useRef<d3.Selection<SVGCircleElement, NodeData, SVGGElement, unknown> | null>(null);
+  const labelRef = useRef<d3.Selection<SVGTextElement, NodeData, SVGGElement, unknown> | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+
   // Sample data structure similar to Obsidian notes
   const [graphData, setGraphData] = useState<GraphData>({
     nodes: Object.keys(nodes).map((key, index): NodeData => {
@@ -99,7 +110,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
         descriptionText: node.descriptionText,
         querySelector: node.querySelector,
         connections: node.connections,
-        size: 12,
+        size: 8,
         color: getChangeTypeColor(node.changeType),
         group: getChangeTypeGroup(node.changeType),
       };
@@ -117,10 +128,13 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
 
   useEffect(() => {
     const updateDimensions = (): void => {
-      setDimensions({
-        width: window.innerWidth - 40,
-        height: window.innerHeight - 120
-      });
+      const container = svgRef.current?.parentElement;
+      if (container) {
+        setDimensions({
+          width: container.clientWidth,
+          height: container.clientHeight
+        });
+      }
     };
 
     updateDimensions();
@@ -142,8 +156,8 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
     );
 
     const simulation = d3.forceSimulation<SimulationNode>(filteredNodes as SimulationNode[])
-      .force("link", d3.forceLink<SimulationNode, SimulationLink>(filteredLinks as SimulationLink[]).id(d => d.id).distance(80))
-      .force("charge", d3.forceManyBody<SimulationNode>().strength(-300))
+      .force("link", d3.forceLink<SimulationNode, SimulationLink>(filteredLinks as SimulationLink[]).id(d => d.id).distance(55))
+      .force("charge", d3.forceManyBody<SimulationNode>().strength(-250))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collision", d3.forceCollide<SimulationNode>().radius(d => d.size + 5));
 
@@ -156,6 +170,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
       });
 
     svg.call(zoom);
+    zoomRef.current = zoom; // Store zoom behavior
 
     const link = container.append("g")
       .selectAll("line")
@@ -169,7 +184,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
       .selectAll("circle")
       .data(filteredNodes)
       .enter().append("circle")
-      .attr("r", d => d.size)
+      .attr("r", d => d.id === selectedNode?.id ? d.size * 2 : d.size)
       .attr("fill", d => d.color)
       .attr("stroke", "#fff")
       .attr("stroke-width", 2)
@@ -201,7 +216,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", d.size * 1.2)
+          .attr("r", d.id === selectedNode?.id ? d.size * 2.2 : d.size * 1.2) // Hover effect: slightly larger than base
           .attr("stroke-width", 3);
         
         // Highlight connected nodes
@@ -214,7 +229,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
           if (targetId === d.id) connectedNodes.add(sourceId);
         });
         
-        node.style("opacity", (n: NodeData) => connectedNodes.has(n.id) || n.id === d.id ? 1 : 0.3);
+        node.style("opacity", (n: NodeData) => connectedNodes.has(n.id) ? 1 : 0.3);
         link.style("opacity", (l: LinkData) => {
           const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
           const targetId = typeof l.target === 'object' ? l.target.id : l.target;
@@ -226,7 +241,7 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", d.size)
+          .attr("r", d.id === selectedNode?.id ? d.size * 2 : d.size) // Revert to base size (selected or unselected)
           .attr("stroke-width", 2);
         
         node.style("opacity", 1);
@@ -269,54 +284,76 @@ const Graph: React.FC<GraphProps> = ({ nodes }) => {
         .attr("y", (d: NodeData) => d.y || 0);
     });
 
+    nodeRef.current = node; // Store node selection
+    labelRef.current = label; // Store label selection
+
     return () => simulation.stop();
   }, [graphData, dimensions]);
 
-  const addNode = (): void => {
-    const colors = ['#7c3aed', '#2563eb', '#059669', '#dc2626', '#ea580c', '#be123c'];
-    const newNode: NodeData = {
-      id: `New Node ${Date.now()}`,
-      changeType: 'img_alt_added', // Default change type
-      descriptionText: 'New node description',
-      querySelector: 'new-selector',
-      connections: [],
-      group: Math.floor(Math.random() * 6) + 1,
-      size: Math.random() * 15 + 8,
-      color: colors[Math.floor(Math.random() * colors.length)]
-    };
-    
-    const existingNode = graphData.nodes[Math.floor(Math.random() * graphData.nodes.length)];
-    const newLink: LinkData = {
-      source: newNode.id,
-      target: existingNode.id
-    };
-    
-    setGraphData(prev => ({
-      nodes: [...prev.nodes, newNode],
-      links: [...prev.links, newLink]
-    }));
-  };
+  useEffect(() => {
+    if (nodeRef.current) {
+      nodeRef.current.attr("r", d => d.id === selectedNode?.id ? d.size * 2 : d.size);
+    }
+
+    if (selectedNode && svgRef.current && zoomRef.current) {
+      const targetNode = graphData.nodes.find(n => n.id === selectedNode.id);
+      if (targetNode) {
+        const { width, height } = dimensions;
+        const scale = 2; // Zoom level
+        const x = -targetNode.x * scale + width / 2;
+        const y = -targetNode.y * scale + height / 2;
+        d3.select(svgRef.current).transition().duration(750).call(zoomRef.current.transform, d3.zoomIdentity.translate(x, y).scale(scale));
+      }
+    } else if (!selectedNode && svgRef.current && zoomRef.current) {
+      // Reset zoom when no node is selected
+      d3.select(svgRef.current).transition().duration(750).call(zoomRef.current.transform, d3.zoomIdentity);
+    }
+  }, [selectedNode, dimensions, graphData.nodes]);
+
+  
+
+  const [showOptionsBar, setShowOptionsBar] = useState(false);
+  const [slideInOptionsBar, setSlideInOptionsBar] = useState(false);
+  const [optionsBarNode, setOptionsBarNode] = useState<NodeData | null>(null);
+
+  useEffect(() => {
+    if (selectedNode) {
+      setOptionsBarNode(selectedNode);
+      setShowOptionsBar(true);
+      // Allow a very short moment for the component to render with initial state before sliding in
+      const slideInTimeout = setTimeout(() => setSlideInOptionsBar(true), 10);
+      return () => clearTimeout(slideInTimeout);
+    } else {
+      setSlideInOptionsBar(false); // Start sliding out
+      const hideTimeout = setTimeout(() => setShowOptionsBar(false), 300); // Hide after animation
+      return () => clearTimeout(hideTimeout);
+    }
+  }, [selectedNode]);
 
   return (
-    <div className="w-full h-screen bg-gray-900 text-white relative overflow-hidden">
-      {selectedNode && (
-        <div className="absolute top-4 right-4 bg-gray-800 rounded-lg p-0 z-10 w-64 h-[calc(100vh-2rem)] flex flex-col">
-          <div className="bg-gray-700 rounded-t-lg px-4 py-3 border-b border-gray-600">
-            <h3 className="font-semibold text-lg text-white">{selectedNode.changeType}</h3>
+    <div className="w-full h-screen bg-gray-100 text-white relative overflow-hidden">
+      {showOptionsBar && optionsBarNode && (
+        <div
+          className={`absolute right-0 bg-white p-0 z-10 w-1/3 h-full flex flex-col transition-transform duration-300 ease-out ${
+            slideInOptionsBar ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="bg-white rounded-t-lg px-4 py-3 border-b border-gray-600">
+            <h3 className="font-semibold text-lg text-[#44455A]">{optionsBarNode.changeType}</h3>
           </div>
           
           <div className="flex-1 p-4 overflow-y-auto">
-            <h4 className="font-medium text-gray-300 mb-2 text-sm">Description</h4>
-            <p className="text-gray-200 leading-relaxed">{selectedNode.descriptionText}</p>
+            <h4 className="font-bold text-[#44455A] mb-2 text-sm">Description</h4>
+            <p className="text-[#5C5C6D] leading-relaxed">{optionsBarNode.descriptionText}</p>
           </div>
           
           <div className="border-t border-gray-600 p-4 bg-gray-750">
-            <p className="text-xs text-gray-500 mb-3 font-mono break-all">
-              {selectedNode.querySelector}
+            <p className="text-md text-gray-500 mb-3 font-mono break-all">
+              {optionsBarNode.querySelector}
             </p>
             <button
               onClick={() => setSelectedNode(null)}
-              className="w-full px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors font-medium"
+              className="w-full px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors font-medium btn-gradient-hover"
             >
               Close
             </button>
