@@ -9,12 +9,11 @@ import (
 	"slices"
 
 	"github.com/lucasmcclean/adk-go/agent"
+	"github.com/lucasmcclean/adk-go/model"
 	"github.com/lucasmcclean/adk-go/session"
 	"github.com/lucasmcclean/adk-go/types"
 	"google.golang.org/genai"
 )
-
-const defaultModel = "gemini-2.0-flash-lite"
 
 type CheckType string
 
@@ -56,7 +55,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	agent, err := NewCorrectionsAgent(ctx, req.RequestedChecks)
+	ag, err := NewCorrectionsAgent(ctx, req.RequestedChecks)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -65,12 +64,16 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	html := genai.NewContentFromText(req.HTML, genai.RoleUser)
 
 	sessionService := session.NewInMemoryService()
-	sess, _ := sessionService.CreateSession(ctx, "altimate", "api_user", "api_session", nil)
-	ictx := types.NewInvocationContext(agent, sess, sessionService, types.WithUserContent(html))
+	sess, err := sessionService.CreateSession(ctx, "altimate", "api_user", "api_session", nil)
+	if err != nil {
+		log.Printf("Oh no!")
+		return
+	}
+	ictx := types.NewInvocationContext(ag, sess, sessionService, types.WithUserContent(html))
 
 	var corrections []AccessibilityCorrection
 
-	for event, err := range agent.Run(ctx, ictx) {
+	for event, err := range ag.Run(ctx, ictx) {
 		if err != nil {
 			log.Printf("Error from agent: %v", err)
 			continue
@@ -95,7 +98,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewCorrectionsAgent(ctx context.Context, checkTypes []CheckType) (*agent.ParallelAgent, error) {
-	imgAltAgent, err := agent.NewLLMAgent(ctx, "imgAltAgent", agent.WithModelString(defaultModel), agent.WithInstruction(`
+	defaultModel, err := model.NewGemini(ctx, "gemini-2.0-flash-lite")
+	if err != nil {
+		return nil, err
+	}
+
+	imgAltAgent, err := agent.NewLLMAgent(ctx, "imgAltAgent", agent.WithModel(defaultModel), agent.WithInstruction(`
         You are an accessibility agent that analyzes an HTML+CSS website and identifies
         accessibility issues. For each issue you find, return a correction as a JSON
         object in a list.
@@ -124,7 +132,7 @@ func NewCorrectionsAgent(ctx context.Context, checkTypes []CheckType) (*agent.Pa
 		return nil, err
 	}
 
-	imgContrastAgent, err := agent.NewLLMAgent(ctx, "imgContrastAgent", agent.WithModelString(defaultModel), agent.WithInstruction(`
+	imgContrastAgent, err := agent.NewLLMAgent(ctx, "imgContrastAgent", agent.WithModel(defaultModel), agent.WithInstruction(`
         You are an accessibility agent that analyzes an HTML+CSS website and identifies
         accessibility issues. For each issue you find, return a correction as a JSON
         object in a list.
@@ -150,7 +158,7 @@ func NewCorrectionsAgent(ctx context.Context, checkTypes []CheckType) (*agent.Pa
 		return nil, err
 	}
 
-	pageContrastAgent, err := agent.NewLLMAgent(ctx, "pageContrastAgent", agent.WithModelString(defaultModel), agent.WithInstruction(`
+	pageContrastAgent, err := agent.NewLLMAgent(ctx, "pageContrastAgent", agent.WithModel(defaultModel), agent.WithInstruction(`
         You are an accessibility agent that analyzes an HTML+CSS website and identifies
         accessibility issues. For each issue you find, return a correction as a JSON
         object in a list.
@@ -176,7 +184,7 @@ func NewCorrectionsAgent(ctx context.Context, checkTypes []CheckType) (*agent.Pa
 		return nil, err
 	}
 
-	pageNavigationAgent, err := agent.NewLLMAgent(ctx, "pageNavigationAgent", agent.WithModelString(defaultModel), agent.WithInstruction(`
+	pageNavigationAgent, err := agent.NewLLMAgent(ctx, "pageNavigationAgent", agent.WithModel(defaultModel), agent.WithInstruction(`
         You are an accessibility agent that analyzes an HTML+CSS website and identifies
         accessibility issues. For each issue you find, return a correction as a JSON
         object in a list.
@@ -202,7 +210,7 @@ func NewCorrectionsAgent(ctx context.Context, checkTypes []CheckType) (*agent.Pa
 		return nil, err
 	}
 
-	pageSkipToMainAgent, err := agent.NewLLMAgent(ctx, "pageSkipToMainAgent", agent.WithModelString(defaultModel), agent.WithInstruction(`
+	pageSkipToMainAgent, err := agent.NewLLMAgent(ctx, "pageSkipToMainAgent", agent.WithModel(defaultModel), agent.WithInstruction(`
         You are an accessibility agent that analyzes an HTML+CSS website and identifies
         accessibility issues. For each issue you find, return a correction as a JSON
         object in a list.
