@@ -1,6 +1,6 @@
 from google.adk.agents import Agent
 
-from app.config import MODEL
+from config import MODEL
 
 img_alt_agent: Agent = Agent(
     name="img_alt_agent",

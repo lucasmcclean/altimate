@@ -1,13 +1,14 @@
 import asyncio
 import json
-from typing import cast
 
 from fastapi import FastAPI, HTTPException
 from google.genai.types import Part, UserContent
 
-from app.agent import altimate_agent
-from app.agent.utils import get_agent_response
-from app.types import AltimateRequest
+from .agent import altimate_agent
+from .agent.utils import get_agent_response
+from .altimate_types import AltimateRequest, AccessibilityCorrection
+
+from .agent.parallel import build_parallel_agent
 
 app = FastAPI()
 
@@ -19,16 +20,15 @@ async def request_corrections(request: AltimateRequest):
     if not request.requested_checks:
         raise HTTPException(status_code=400, detail="No checks specified")
 
-    requested_checks = ", ".join(
-        check.value for check in request.requested_checks
-    )
-    checks_instruction = f"\n\nOnly run these accessibility checks: {requested_checks}. Ignore all others.\n"
+    # requested_checks = ", ".join(
+    #     check.value for check in request.requested_checks
+    # )
+    # checks_instruction = f"\n\nOnly run these accessibility checks: {requested_checks}. Ignore all others.\n"
 
     updated_agent = altimate_agent.model_copy(
         update={
-            "instruction": cast(str, altimate_agent.instruction)
-            + checks_instruction
-        }
+            "sub_agents": [build_parallel_agent(request.requested_checks)]
+            }
     )
 
     runner = InMemoryRunner(agent=updated_agent)

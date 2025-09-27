@@ -1,6 +1,6 @@
 from google.adk.agents import Agent
 
-from app.config import MODEL
+from config import MODEL
 
 page_navigation_agent = Agent(
     name="page_navigation_agent",

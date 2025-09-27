@@ -5,7 +5,7 @@ from google.adk.runners import InMemoryRunner
 from google.adk.tools import FunctionTool
 from google.genai.types import Part, UserContent
 
-from app.types import ChangeType
+from altimate_types import ChangeType
 
 from .sub_agents.img_alt import img_alt_agent
 from .sub_agents.img_contrast import img_contrast_agent
