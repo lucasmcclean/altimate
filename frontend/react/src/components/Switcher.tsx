@@ -121,7 +121,7 @@ const Switcher = () => {
 	
 
 	const makeAccessible = async() => {
-    setError(null); // Clear previous errors
+    setError(null); 
     setIsLoading(true);
     const rawHtml = document.body.innerHTML;
     fetch('http://localhost:8000/', {

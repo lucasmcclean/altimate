@@ -397,7 +397,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 					</div>
 			)}
 			<div className='w-full flex justify-center flex-col items-center h-[40%] bottom-6 absolute bg-transparent pointer-events-none'>
-			<Textarea className='w-[80%] h-[50%] text-black pointer-events-none border-1 border-[#6AB3DC]' />
+			 <Textarea className='w-[80%] h-[50%] text-black border-1 border-[#6AB3DC] pointer-events-auto' tabIndex={-1} readOnly >LLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremLoremorem</Textarea>
 			</div>
 
 			<div className='w-full flex justify-start flex-col items-start h-[40%] left-4 top-4 absolute bg-transparent pointer-events-none'>
