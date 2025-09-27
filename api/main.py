@@ -40,7 +40,6 @@ async def request_corrections(request: AltimateRequest):
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="AI agent timed out")
 
-    # Try to extract and parse corrections
     corrections_raw = []
     try:
         corrections = response.get("default", "")
