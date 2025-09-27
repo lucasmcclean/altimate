@@ -47,7 +47,22 @@ async def request_corrections(request: AltimateRequest):
     except asyncio.TimeoutError:
         raise HTTPException(status_code=504, detail="AI agent timed out")
 
-    corrections = response.get("corrections", "").strip()
+    corrections_raw = []
+    try:
+        corrections = response.get("default", "")
+        match = re.search(r"\[\s*{.*?}\s*\]", corrections, re.DOTALL)
+        if not match:
+            raise ValueError("No JSON array found in 'default' output")
+        corrections_raw = json.loads(match.group(0))
+        corrections = [
+            AccessibilityCorrection(**item) for item in corrections_raw
+        ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Agent response format invalid: {e}"
+        )
+
     summary = response.get("summary", "").strip()
 
     if not corrections:

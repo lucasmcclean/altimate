@@ -15,17 +15,17 @@ from .sub_agents.page_skip_to_main import page_skip_to_main_agent
 from .summary import build_summary_agent
 
 AGENT_MAP = {
-    ChangeType.IMG_ALT: lambda: cast(BaseAgent, img_alt_agent).copy(),
-    ChangeType.IMG_CONTRAST: lambda: cast(BaseAgent, img_contrast_agent).copy(),
-    ChangeType.PAGE_CONTRAST: lambda: cast(BaseAgent, page_contrast_agent).copy(),
-    ChangeType.PAGE_NAVIGATION: lambda: cast(BaseAgent, page_navigation_agent).copy(),
-    ChangeType.PAGE_SKIP_TO_MAIN: lambda: cast(BaseAgent, page_skip_to_main_agent).copy(),
+    ChangeType.IMG_ALT: cast(BaseAgent, img_alt_agent),
+    ChangeType.IMG_CONTRAST: cast(BaseAgent, img_contrast_agent),
+    ChangeType.PAGE_CONTRAST: cast(BaseAgent, page_contrast_agent),
+    ChangeType.PAGE_NAVIGATION: cast(BaseAgent, page_navigation_agent),
+    ChangeType.PAGE_SKIP_TO_MAIN: cast(BaseAgent, page_skip_to_main_agent),
 }
 
 
 def build_parallel_agent(requested_checks: list[ChangeType]) -> ParallelAgent:
     selected_agents = [
-        AGENT_MAP[check]() for check in requested_checks if check in AGENT_MAP
+        AGENT_MAP[check] for check in requested_checks if check in AGENT_MAP
     ]
 
     summary_agent = build_summary_agent(requested_checks)
