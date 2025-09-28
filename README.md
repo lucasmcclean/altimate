@@ -24,9 +24,9 @@ does just that.
 
 ### Frontend
 
-The files for the frontend with a external backend are currently being hosted at [Frontend]()
+The files for the frontend with a external backend are currently being hosted at [Frontend](https://lucasmcclean.github.io/altimate-showcase/)
 
-To run the app entirely locally,
+To run the app entirely locally:
 - Git clone this repository
 - Cd altimate/frontend/react
 - Run npm i && npm run build
@@ -34,13 +34,14 @@ To run the app entirely locally,
     - Go to chrome
     - Go to "Manage Extensions"
     - Turn on Developer Mode
+    - Select "Load unpacked"
     - Select the newly created dist folder inside frontend/react
 
 ### Backend 
 
 The backend alone is currently being hosted at [Backend](https://altimate.onrender.com/)
 
-To run the backend locally (only works for a locally hosted frontend),
+To run the backend locally (only works for a locally hosted frontend):
 - Git clone this repository (Should already be done from hosting frontend)
 - cd altimate/api
 - Make sure your gemini key is exposed as GOOGLE_API_KEY
