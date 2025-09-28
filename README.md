@@ -35,11 +35,11 @@ accessibility tools that can take their role one step further by making context-
 decisions and taking unique approaches to ensuring an accessible web. **Altimate**
 does just that.
 
-## Preparing and running the chrome extention
+## Preparing and Running the Chrome Extention
 
 ### Frontend
 
-The files for the frontend with a external backend are currently being hosted at [Frontend](https://lucasmcclean.github.io/altimate-showcase/)
+The files for the frontend with a external backend are currently being hosted at [lucasmcclean.github.io/altimate-showcase/](https://lucasmcclean.github.io/altimate-showcase/).
 
 To run the app entirely locally:
 - `git clone` this repository
