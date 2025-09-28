@@ -158,7 +158,7 @@ const Switcher = () => {
 		<img src='/FULL_LOGO.webp' className="w-[70%]" />
 		</div>
 		<Separator />
-		<div className="w-[90%] border border-gray-800 self-center mt-12 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+		<div className={`w-[90%] border border-gray-800 self-center mt-${dev ? '64' : '12'} max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800`}>
 		<div className="flex flex-col items-start justify-between mb-6">
 		<p className="text-3xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
 		<div className="flex items-center space-x-2 mt-4">
@@ -180,7 +180,7 @@ const Switcher = () => {
 				variant="outline"
 				pressed={accesibilityArr.includes(atl)}
 				onPressedChange={(checked) => handleToggle(atl, checked)}
-				className="data-[state=on]:bg-[#74B5CC] data-[state=on]:text-white"
+				className="data-[state=on]:bg-gradient-to-b data-[state=on]:from-[#65BFB0] data-[state=on]:to-[#7AB1D7] data-[state=on]:text-white"
 				> {translate(atl)}
 				</Toggle>
 				</div>

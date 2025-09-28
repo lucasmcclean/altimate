@@ -195,4 +195,10 @@ h1 {
   opacity: 1; /* Fade in */
 }
 
+.data-[state=on]:btn-gradient-on[data-state="on"] {
+  background-image: linear-gradient(to bottom, #31C4AA, #6AB3DD);
+  color: white; /* Ensure text color is white on gradient */
+}
+
+
 
