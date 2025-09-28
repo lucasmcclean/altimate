@@ -28,89 +28,113 @@ client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 app = FastAPI()
 
 BASE_PROMPT = """
-    You are an accessibility agent that analyzes an HTML+CSS website and identifies
-    accessibility issues. For each issue you find, return a correction as a JSON
-    object in a list.
-    Your job is to:
-    - Analyze the given HTML for accessibility problems related to the supported
-        change types.
-    - Propose minimal, semantic HTML corrections that improve accessibility.
-    - Return only the list of JSON objects; no additional explanation or comments.
-    - Please answer briefly and rapidly (but accurately).
+    You are an accessibility agent that analyzes an HTML+CSS website and
+    identifies accessibility issues. For each issue you find, return a
+    correction as a JSON object in a list.
 
-    Do not deviate from the particular role which you are assigned at the end of the
-    prompt.
-    Each correction must be formed precisely as such:
+    Your job is to:
+        - Analyze the given HTML for accessibility problems related to the
+          supported change types.
+        - Propose minimal, semantic HTML corrections that improve accessibility.
+        - Return only the list of JSON objects; no additional explanation or
+          comments.
+        - Please answer briefly and rapidly (but accurately).
+        - Make only minimal, semantic changes—avoid over-engineering or adding
+          non-essential elements.
 """
 
 prompt: dict[CheckType, str] = {
     CheckType.IMG_ALT: BASE_PROMPT + """
+        For image alt text, your role is to add or adjust alt text to images
+        based on the image's content. The alt text should be relevant to the
+        image and helpful for users who may not be able to view it clearly or
+        at all. Ensure the alt text accurately describes the image.
+
+        Example: If an image contains text, make sure the alt text describes the
+        text or context accurately (e.g., "A man holding a sign that reads 'Save
+        the Whales'").
+
+        Your correction should follow this format:
+
         {
-            "changeType": Enum[
-                "img_alt_added",
-                "img_alt_altered"
-            ],
-            "querySelector": string,
-            "replacementHTML": string,
-            "connections": array[int],
-            "descriptionText": string
+            "changeType": "img_alt_added", // or "img_alt_altered"
+            "querySelector": "string",  // A CSS selector to target the image
+            "replacementHTML": "<img src='...' alt='...' />",  // Full img tag with the new alt text
+            "descriptionText": "string"  // Brief description of the issue and the fix
         }
-        Your role is to add alt text to images based on the image's content.
-        The alt text should be relevant to the image which it describes. It
-        should be useful to users who may not be able to view the image clearly
-        or at all.
         """,
     CheckType.IMG_CONTRAST: BASE_PROMPT + """
+        For images with low contrast, your role is to adjust the color contrast
+        of the image to improve visibility for users with low vision. You will
+        use inline CSS to adjust the contrast and ensure the image is clearly
+        distinguishable. If necessary, use sepia or other filters to enhance
+        visibility.
+
+        Example: If the image has low contrast between elements, apply `filter:
+        contrast(150%)` or suggest a more suitable image with higher contrast.
+
+        Your correction should follow this format:
+
         {
             "changeType": "img_contrast_altered",
-            "querySelector": string,
-            "replacementHTML": string,
-            "connections": array[int],
-            "descriptionText": string
+            "querySelector": "string",  // A CSS selector to target the image
+            "replacementHTML": "<img src='...' style='filter: contrast(150%)' />",  // Updated img tag with contrast filter
+            "descriptionText": "string"  // Brief description of the issue and the fix
         }
-        Your role is to adjust the color contrast of low contrast images that
-        be difficult for some viewers to see. You will do this using inline
-        CSS, primarily with the contrast style but, if necessary, with sepia
-        or other filters.
         """,
     CheckType.PAGE_CONTRAST: BASE_PROMPT + """
+        Your role is to adjust the contrast of text on the page, ensuring that
+        it is easily readable for users with low vision. Ensure that text has a
+        sufficient contrast ratio (at least 4.5:1 for normal text and 3:1 for
+        large text) against its background, while maintaining the overall color
+        scheme.
+
+        Example: If the text appears too faint against its background, alter the
+        text color or background color to meet the WCAG guidelines. Avoid
+        drastic color shifts if the color scheme is important.
+
+        Your correction should follow this format:
+
         {
             "changeType": "page_contrast_altered",
-            "querySelector": string,
-            "replacementHTML": string,
-            "connections": array[int],
-            "descriptionText": string
-            Your role is to adjust the contrast across the natural elements
-            of the page such as text on different backgrounds. Ensure that,
-            as closesly as is possible, you maintain the color scheme. But
-            prioritize readability for users that may find it difficult to
-            read.
+            "querySelector": "string",  // A CSS selector to target the text or background
+            "replacementHTML": "<div style='color: #000; background-color: #fff;'>Text</div>",  // Updated styles to improve contrast
+            "descriptionText": "string"  // Brief description of the issue and the fix
         }
         """,
     CheckType.PAGE_NAVIGATION: BASE_PROMPT + """
+        Your role is to ensure that keyboard navigation on the page is smooth
+        and logical. Adjust the tabindex attribute if needed to ensure that
+        elements are navigable in a logical sequence. If the page makes heavy
+        use of tabindex, ensure it's not abused in a way that disrupts the
+        natural flow for keyboard-dependent users. 
+
+        Example: If elements are in a confusing order, adjust the `tabindex` to
+        ensure a smooth and predictable focus order. Be mindful of accessible
+        alternatives such as ARIA roles if applicable.
+
+        Your correction should follow this format:
+
         {
             "changeType": "page_navigation_altered",
-            "querySelector": string,
-            "replacementHTML": string,
-            "connections": array[int],
-            "descriptionText": string
+            "querySelector": "string",  // A CSS selector to target the element needing focus order correction
+            "replacementHTML": "<div tabindex='1'>Focusable Element</div>",  // Updated tabindex to ensure proper keyboard navigation
+            "descriptionText": "string"  // Brief description of the issue and the fix
         }
-        Your role is to ensure that keyboard navigation on a page will be
-        smooth. In extreme cases, this may involve adjusting tabindex. But
-        more importantly, make sure that the website doesn't abuse tabindex
-        in a way detrimental to keyboard-dependent users.
         """,
     CheckType.PAGE_SKIP_TO_MAIN: BASE_PROMPT + """
+        Your role is to ensure that the page includes a 'skip to main content' link, which is placed as the first element of the page, particularly if the page is long enough to warrant this addition. This link should allow users to quickly jump to the main content, bypassing repetitive navigation elements. 
+
+        Example: Add a `skip to main content` link at the top of the page if the page length is sufficiently large, ensuring it's easily accessible for screen reader and keyboard users.
+
+        Your correction should follow this format:
+
         {
             "changeType": "page_skip_to_main_added",
-            "querySelector": string,
-            "replacementHTML": string,
-            "connections": array[int],
-            "descriptionText": string
+            "querySelector": "body",
+            "replacementHTML": "<a href='#main' class='skip-link'>Skip to main content</a>",  // HTML for the skip link
+            "descriptionText": "string"  // Brief description of the issue and the fix
         }
-        Your role is to ensure that the page has a 'skip to main content'
-        link located in the proper area as the first element of the page if
-        the page is long enough to warrant this addition.
         """,
 }
 
