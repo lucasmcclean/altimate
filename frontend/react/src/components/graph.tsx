@@ -220,10 +220,10 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .selectAll("text")
       .data(filteredNodes)
       .enter().append("text")
-      .text(d => d.changeType[0])
+      .text(d => d.changeType[0].toUpperCase())
       .attr("font-size", "12px")
       .attr("font-family", "Arial, sans-serif")
-      .attr("fill", theme === 'dark' ? "#e2e8f0" : "#374151") // Dark mode label color
+      .attr("fill", theme === 'dark' ? "#e2e8f0" : "#e2e8f0") // Dark mode label color
       .attr("text-anchor", "middle")
       .attr("dy", ".35em")
       .style("pointer-events", "none")
