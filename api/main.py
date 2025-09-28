@@ -38,6 +38,8 @@ BASE_PROMPT = """
     - Return only the list of JSON objects; no additional explanation or comments.
     - Please answer briefly and rapidly (but accurately).
 
+    Do not deviate from the particular role which you are assigned at the end of the
+    prompt.
     Each correction must be formed precisely as such:
 """
 
@@ -53,6 +55,10 @@ prompt: dict[CheckType, str] = {
             "connections": array[int],
             "descriptionText": string
         }
+        Your role is to add alt text to images based on the image's content.
+        The alt text should be relevant to the image which it describes. It
+        should be useful to users who may not be able to view the image clearly
+        or at all.
         """,
     CheckType.IMG_CONTRAST: BASE_PROMPT + """
         {
@@ -62,6 +68,10 @@ prompt: dict[CheckType, str] = {
             "connections": array[int],
             "descriptionText": string
         }
+        Your role is to adjust the color contrast of low contrast images that
+        be difficult for some viewers to see. You will do this using inline
+        CSS, primarily with the contrast style but, if necessary, with sepia
+        or other filters.
         """,
     CheckType.PAGE_CONTRAST: BASE_PROMPT + """
         {
@@ -70,6 +80,11 @@ prompt: dict[CheckType, str] = {
             "replacementHTML": string,
             "connections": array[int],
             "descriptionText": string
+            Your role is to adjust the contrast across the natural elements
+            of the page such as text on different backgrounds. Ensure that,
+            as closesly as is possible, you maintain the color scheme. But
+            prioritize readability for users that may find it difficult to
+            read.
         }
         """,
     CheckType.PAGE_NAVIGATION: BASE_PROMPT + """
@@ -80,6 +95,10 @@ prompt: dict[CheckType, str] = {
             "connections": array[int],
             "descriptionText": string
         }
+        Your role is to ensure that keyboard navigation on a page will be
+        smooth. In extreme cases, this may involve adjusting tabindex. But
+        more importantly, make sure that the website doesn't abuse tabindex
+        in a way detrimental to keyboard-dependent users.
         """,
     CheckType.PAGE_SKIP_TO_MAIN: BASE_PROMPT + """
         {
@@ -89,6 +108,9 @@ prompt: dict[CheckType, str] = {
             "connections": array[int],
             "descriptionText": string
         }
+        Your role is to ensure that the page has a 'skip to main content'
+        link located in the proper area as the first element of the page if
+        the page is long enough to warrant this addition.
         """,
 }
 
