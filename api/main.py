@@ -8,8 +8,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from pydantic import BaseModel
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
 
 class CheckType(str, Enum):
@@ -219,11 +217,3 @@ async def index(request: AltimateRequest):
     corrections = [item for sublist in results if sublist for item in sublist]
     connected_corrections = build_connections(corrections)
     return connected_corrections
-
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Serve index.html at the root
-@app.get("/")
-async def read_index():
-    return FileResponse('static/index.html')
