@@ -153,15 +153,27 @@ def build_connections(corrections: list[dict], min_connections=2, max_connection
             current_correction["connections"] = connections[:max(len(connections), min_connections)]
 
     group_keys = list(grouped.keys())
-    for i, key_a in enumerate(group_keys):
-        group_a = grouped[key_a]
-        node_a_idx, node_a = random.choice(group_a)
-        for key_b in group_keys[i + 1:]:
-            group_b = grouped[key_b]
-            node_b_idx, node_b = random.choice(group_b)
+    connected_pairs = set()
 
-            node_a["connections"].append(node_b_idx)
-            node_b["connections"].append(node_a_idx)
+    for i, key_a in enumerate(group_keys):
+        for j in range(i + 1, len(group_keys)):
+            key_b = group_keys[j]
+            if (key_a, key_b) in connected_pairs or (key_b, key_a) in connected_pairs:
+                continue
+
+            group_a = grouped[key_a]
+            group_b = grouped[key_b]
+
+            num_cross_connections = 2 if min(len(group_a), len(group_b)) > 5 else 1
+
+            for _ in range(num_cross_connections):
+                node_a_idx, node_a = random.choice(group_a)
+                node_b_idx, node_b = random.choice(group_b)
+
+                node_a["connections"].append(node_b_idx)
+                node_b["connections"].append(node_a_idx)
+
+            connected_pairs.add((key_a, key_b))
 
     return corrections
 
