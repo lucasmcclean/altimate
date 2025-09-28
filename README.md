@@ -15,21 +15,21 @@ accessibility to any site they visit.
 ## Reaching Beyond Basic Accessibility
 
 Tools that can statically analyze and programmatically address accessibility issues
-serve a foundational role on the web. But there is a strong lack of 'semantic'
+serve a foundational role on the web. But there is a lack of 'semantic'
 accessibility tools that can take their role one step further by making context-aware
 decisions and taking unique approaches to ensuring an accessible web. **Altimate**
 does just that.
 
-## Preparing and running the chrome extention
+## Preparing and Running the Chrome Extention
 
 ### Frontend
 
-The files for the frontend with a external backend are currently being hosted at [Frontend](https://lucasmcclean.github.io/altimate-showcase/)
+The files for the frontend with a external backend are currently being hosted at [lucasmcclean.github.io/altimate-showcase/](https://lucasmcclean.github.io/altimate-showcase/).
 
 To run the app entirely locally:
-- Git clone this repository
-- Cd altimate/frontend/react
-- Run npm i && npm run build
+- `git clone` this repository
+- `cd altimate/frontend/react`
+- Run `npm i && npm run build`
 - Make the chrome extension
     - Go to chrome
     - Go to "Manage Extensions"
@@ -39,12 +39,12 @@ To run the app entirely locally:
 
 ### Backend 
 
-The backend alone is currently being hosted at [Backend](https://altimate.onrender.com/)
+The backend is currently being hosted at [altimate.onrender.com](https://altimate.onrender.com/).
 
 To run the backend locally (only works for a locally hosted frontend):
-- Git clone this repository (Should already be done from hosting frontend)
-- cd altimate/api
-- Make sure your gemini key is exposed as GOOGLE_API_KEY
+- `git clone` this repository (Should already be done from hosting frontend)
+- `cd altimate/api`
+- Make sure your gemini key is exposed as `GOOGLE_API_KEY`
 - Setup a python virtual environment (Optional but recommended)
-- pip install google-genai fastapi[standard]
-- run fastapi dev
+- `pip install google-genai fastapi[standard]`
+- Run `fastapi dev`
