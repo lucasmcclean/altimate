@@ -60,6 +60,7 @@ interface GraphProps {
   }>;
 	selectedNode: NodeData;
 	setSelectedNode: (node: NodeData | null) => void;
+  applyNodeChangesToPage: (node: NodeType) => void;
 }
 
 // Simulation node type for D3
@@ -97,7 +98,7 @@ const getChangeTypeColor = (changeType: ChangeType): string => {
   return colors[changeTypes.indexOf(changeType) % colors.length];
 };
 
-const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) => {
+const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes, applyNodeChangesToPage }) => {
   const { theme } = useTheme();
   const svgRef = useRef<SVGSVGElement>(null);
   const nodeRef = useRef<d3.Selection<SVGCircleElement, NodeData, SVGGElement, unknown> | null>(null);
@@ -106,29 +107,36 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   // Sample data structure similar to Obsidian notes
-  const [graphData, setGraphData] = useState<GraphData>({
-    nodes: Object.keys(nodes).map((key, index): NodeData => {
-      const node = nodes[key];
-      return {
-        id: `${index}`,
-        changeType: node.changeType,
-        descriptionText: node.descriptionText,
-				replacementHTML: node.replacementHTML,
-        querySelector: node.querySelector,
-        connections: node.connections,
-        size: 8,
-        color: getChangeTypeColor(node.changeType),
-        group: getChangeTypeGroup(node.changeType),
-      };
-    }),
-    links: Object.keys(nodes).map((key, index): LinkData[] => {
-      const node = nodes[key];
-      return node.connections.map((connectionIndex): LinkData => ({
-        source: `${index}`,
-        target: `${connectionIndex}`,
-      }));
-    }).flat()
-  });
+  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
+
+  useEffect(() => {
+    if (nodes) {
+      const newNodes: NodeData[] = Object.keys(nodes).map((key, index) => {
+        const node = nodes[key];
+        return {
+          id: `${index}`,
+          changeType: node.changeType,
+          descriptionText: node.descriptionText,
+          replacementHTML: node.replacementHTML,
+          querySelector: node.querySelector,
+          connections: node.connections,
+          size: 8,
+          color: getChangeTypeColor(node.changeType),
+          group: getChangeTypeGroup(node.changeType),
+        };
+      });
+
+      const newLinks: LinkData[] = Object.keys(nodes).map((key, index) => {
+        const node = nodes[key];
+        return node.connections.map((connectionIndex): LinkData => ({
+          source: `${index}`,
+          target: `${connectionIndex}`,
+        }));
+      }).flat();
+
+      setGraphData({ nodes: newNodes, links: newLinks });
+    }
+  }, [nodes]);
 
   const [dimensions, setDimensions] = useState<Dimensions>({ width: 800, height: 600 });
 

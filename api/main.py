@@ -41,6 +41,10 @@ BASE_PROMPT = """
         - Please answer briefly and rapidly (but accurately).
         - Make only minimal, semantic changes—avoid over-engineering or adding
           non-essential elements.
+        - Make sure all replacementHTML is meant to entirely replace whatever the querySelector would select is.
+        - Do not select any element for change twice.
+        - The code is simply going to document.querySelect the querySelector property and set its outerHTML to the replacementHTML so change literally nothing else and include that entire element including its children
+        - Use PRECISELY the format given to you, if one of the fields is filled out, like "changeType" then use only that filled out type when returning it
 """
 
 prompt: dict[CheckType, str] = {
@@ -53,6 +57,8 @@ prompt: dict[CheckType, str] = {
         Example: If an image contains text, make sure the alt text describes the
         text or context accurately (e.g., "A man holding a sign that reads 'Save
         the Whales'").
+
+        The changeType MUST be the same as the one in the format.
 
         Your correction should follow this format:
 
@@ -72,6 +78,8 @@ prompt: dict[CheckType, str] = {
 
         Example: If the image has low contrast between elements, apply `filter:
         contrast(150%)` or suggest a more suitable image with higher contrast.
+
+        The changeType MUST be the same as the one in the format.
 
         Your correction should follow this format:
 
@@ -93,6 +101,8 @@ prompt: dict[CheckType, str] = {
         text color or background color to meet the WCAG guidelines. Avoid
         drastic color shifts if the color scheme is important.
 
+        The changeType MUST be the same as the one in the format.
+
         Your correction should follow this format:
 
         {
@@ -113,6 +123,8 @@ prompt: dict[CheckType, str] = {
         ensure a smooth and predictable focus order. Be mindful of accessible
         alternatives such as ARIA roles if applicable.
 
+        The changeType MUST be the same as the one in the format.
+
         Your correction should follow this format:
 
         {
@@ -126,6 +138,8 @@ prompt: dict[CheckType, str] = {
         Your role is to ensure that the page includes a 'skip to main content' link, which is placed as the first element of the page, particularly if the page is long enough to warrant this addition. This link should allow users to quickly jump to the main content, bypassing repetitive navigation elements. 
 
         Example: Add a `skip to main content` link at the top of the page if the page length is sufficiently large, ensuring it's easily accessible for screen reader and keyboard users.
+
+        The changeType MUST be the same as the one in the format.
 
         Your correction should follow this format:
 

@@ -168,15 +168,23 @@ const Switcher = () => {
       console.log(data);
       setIsLoading(false);
       setNodes(data);
-      chrome.scripting.executeScript({
-        target: {tabId: tab.id},
-        function: (data) => {
-          console.log(data);
-        },
-        args: [data]
-      });
+      
     })
 	}
+
+  const applyNodeChangesToPage = async (node: NodeType) => {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    chrome.scripting.executeScript({
+      target: {tabId: tab.id},
+      function: (nodeToApply) => {
+        const element = document.querySelector(nodeToApply.querySelector);
+        if (element) {
+          element.innerHTML = nodeToApply.replacementHTML;
+        }
+      },
+      args: [node]
+    });
+  };
 
 
 	return (
@@ -229,12 +237,12 @@ const Switcher = () => {
 
 			{nodes && nodes.length > 0 && (
 				<div className="w-full max-w-4xl">
-					<Graph selectedNode={selectedNode} setSelectedNode={setSelectedNode} nodes={nodes} />
+					<Graph selectedNode={selectedNode} setSelectedNode={setSelectedNode} nodes={nodes} applyNodeChangesToPage={applyNodeChangesToPage} />
 				</div>
 			)}
 			{nodes.length == 0 && (
 				<div className="w-full max-w-4xl">
-					<Graph selectedNode={selectedNode} setSelectedNode={setSelectedNode} nodes={nodesTemp} />
+					<Graph selectedNode={selectedNode} setSelectedNode={setSelectedNode} nodes={nodesTemp} applyNodeChangesToPage={applyNodeChangesToPage} />
 				</div>
 			)
 			}
