@@ -124,7 +124,14 @@ const Switcher = () => {
 	const makeAccessible = async() => {
     setError(null); 
     setIsLoading(true);
-    const rawHtml = document.body.innerHTML;
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+
+    const injectionResults = await chrome.scripting.executeScript({
+        target: {tabId: tab.id},
+        function: () => document.documentElement.innerHTML,
+        args: []
+    });
+    const rawHtml = injectionResults[0].result;
     await fetch('http://localhost:8000/', {
       method: 'POST',
       headers: {
@@ -151,7 +158,7 @@ const Switcher = () => {
 		<img src='/FULL_LOGO.webp' className="w-[70%]" />
 		</div>
 		<Separator />
-		<div className="w-[90%] border border-gray-800 self-center mt-20 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+		<div className="w-[90%] border border-gray-800 self-center mt-12 max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
 		<div className="flex flex-col items-start justify-between mb-6">
 		<p className="text-3xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
 		<div className="flex items-center space-x-2 mt-4">
@@ -186,7 +193,6 @@ const Switcher = () => {
 		<Button className="w-full btn-gradient-hover" onClick={makeAccessible} disabled={isLoading}>
 		{isLoading ? 'Loading...' : 'Make Accessible ✦'}
 		</Button>
-        <img src="../../portfolio/static/portrait.png" />
 		</div>
 			</div>}
 

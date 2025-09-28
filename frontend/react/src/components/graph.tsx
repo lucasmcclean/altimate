@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Lightbulb } from 'lucide-react';
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Lightbulb, Settings, Search } from 'lucide-react';
 import * as d3 from 'd3';
 import { Textarea } from './ui/textarea';
 
@@ -337,7 +337,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   const [showOptionsBar, setShowOptionsBar] = useState(false);
   const [slideInOptionsBar, setSlideInOptionsBar] = useState(false);
   const [optionsBarNode, setOptionsBarNode] = useState<NodeData | null>(null);
-	const [popOverOpen, setPopOverOpen] = useState<Boolean>(false);
+	const [dialogOpen, setDialogOpen] = useState<Boolean>(false);
 
   useEffect(() => {
     if (selectedNode) {
@@ -353,9 +353,9 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
     }
   }, [selectedNode]);
 
-	async function executeChange(querySelector: string, replacementHTML: string) {
-		console.log(querySelector, replacementHTML);
-		console.log(selectedNode);
+	async function executeChange(selectedNode: NodeData) {
+		const querySelector = selectedNode.querySelector;
+		const replacementHTML = selectedNode.replacementHTML;
 		const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
 
     chrome.scripting.executeScript({
@@ -366,6 +366,20 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
         },
         args: [querySelector, replacementHTML]
     });
+
+		setGraphData(graphData => {
+			const newNodes = graphData.nodes.filter(a => a.id !== selectedNode.id);
+			const newLinks = graphData.links.filter(link => {
+				const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+				const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+				return sourceId !== selectedNode.id && targetId !== selectedNode.id;
+			});
+			return {
+				nodes: newNodes,
+				links: newLinks
+			};
+		});
+		setSelectedNode(null)
 	}
 
   return (
@@ -397,7 +411,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 					Close
 					</button>
 					<Button
-					onClick={() => executeChange(selectedNode.querySelector, selectedNode.replacementHTML)}
+					onClick={() => executeChange(selectedNode)}
 					variant="outline"
 					className="w-2/5 text-black"
 					>
@@ -409,25 +423,85 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 			)}
 
 			<div className='w-full flex justify-start flex-col items-start h-[40%] left-4 top-4 absolute bg-transparent pointer-events-none'>
-			<Popover open={popOverOpen} onOpenChange={setPopOverOpen}>
-			<PopoverTrigger asChild>
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+			<DialogTrigger asChild>
 			{/* Remove Button wrapper to avoid size constraints */}
 			<div className="cursor-pointer p-2 pointer-events-auto"> {/* Add padding for touch target */}
 				<Lightbulb
 			className="w-6 h-6 text-[#333348]"
-			fill={popOverOpen ? "#ADD8E6" : "none"}
+			fill={dialogOpen ? "#ADD8E6" : "none"}
 			/>
 			</div>
-			</PopoverTrigger>
-			<PopoverContent 
-			side="right" 
-			align="start"
-			sideOffset={10} // Adds space between icon and popover
-			className="w-64" // Optional: control popover width
+			</DialogTrigger>
+			<DialogContent 
+			className="fixed right-4 top-[50%] max-h-[80vh] max-w-md overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
 			>
-			<p>This is the popover content!</p>
-			</PopoverContent>
-			</Popover>
+			<div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+			<div className="flex items-center gap-2 mb-2">
+			<h1 className="text-2xl font-bold text-gray-800">Accessibility Issues Overview</h1>
+			</div>
+
+  <p className="text-gray-600 mb-6">
+    This Chrome extension scans your website for accessibility issues and displays them as clickable nodes.
+  </p>
+  
+  <hr className="border-gray-300 mb-6" />
+  
+  <div className="mb-6">
+    <div className="flex items-center gap-2 mb-3">
+      <Search className="w-5 h-5 text-gray-600" />
+      <h2 className="text-lg font-semibold text-gray-800">How It Works:</h2>
+    </div>
+    
+    <div className="ml-7 space-y-2 text-gray-700">
+      <p>- Each <span className="font-semibold">node</span> represents a specific <span className="font-semibold">accessibility issue</span> found on the page.</p>
+      <p>- Clicking a node will show you:</p>
+      <div className="ml-4 space-y-1">
+        <p>A <span className="font-semibold">description</span> of the issue</p>
+        <p>° The <span className="font-semibold">type</span> of accessibility problem (e.g. contrast, missing lables, etc.)</p>
+        <p>° An option to <span className="font-semibold">fix it manually</span> or <span className="font-semibold">automatically</span></p>
+      </div>
+    </div>
+  </div>
+  
+  <div className="mb-6">
+    <div className="flex items-center gap-2 mb-3">
+      <Settings className="w-5 h-5 text-gray-600" />
+      <h2 className="text-lg font-semibold text-gray-800">Two Modes of Use:</h2>
+    </div>
+    
+    <div className="ml-7 space-y-4">
+      <div>
+        <h3 className="font-semibold text-teal-500 mb-2">Developer Mode:</h3>
+        <div className="space-y-1 text-gray-700">
+          <p>° Click on each node to review and <span className="font-semibold">manually fix</span> issues.</p>
+          <p>° Great for learning how to improve accessibility yourself.</p>
+        </div>
+      </div>
+      
+      <div>
+        <h3 className="font-semibold text-teal-500 mb-2">User Mode:</h3>
+        <div className="space-y-1 text-gray-700">
+          <p>° The extension will <span className="font-semibold">automatically fix</span> accessibility issues when the page is rendered.</p>
+          <p>° This helps users with disabilities have a more accessible browsing experience without needing to click anything.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div>
+    <div className="flex items-center gap-2 mb-3">
+      <Lightbulb className="w-5 h-5 text-gray-600" />
+      <h2 className="text-lg font-semibold text-gray-800">Tip:</h2>
+    </div>
+    
+    <p className="ml-7 text-gray-700">
+      Use this tool to ensure your website is accessible to everyone, including people using screen readers, keyboard navigation, or other assistive technologies.
+    </p>
+  </div>
+</div>
+			</DialogContent>
+			</Dialog>
 			</div>
 			{/* SVG Graph */}
 			<svg
