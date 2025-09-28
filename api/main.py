@@ -133,13 +133,14 @@ def extract_json_from_response(text: str):
 
 def build_connections(corrections: list[dict], min_connections=2, max_connections=3) -> list[dict]:
     from collections import defaultdict
+    import random
+
     grouped = defaultdict(list)
 
     for i, correction in enumerate(corrections):
         grouped[correction["changeType"]].append((i, correction))
 
     for group in grouped.values():
-        _ = [idx for idx, _ in group]
         for i, (_, current_correction) in enumerate(group):
             connections = []
             for offset in range(1, max_connections + 1):
@@ -151,28 +152,16 @@ def build_connections(corrections: list[dict], min_connections=2, max_connection
                     break
             current_correction["connections"] = connections[:max(len(connections), min_connections)]
 
-    return corrections
+    group_keys = list(grouped.keys())
+    for i, key_a in enumerate(group_keys):
+        group_a = grouped[key_a]
+        node_a_idx, node_a = random.choice(group_a)
+        for key_b in group_keys[i + 1:]:
+            group_b = grouped[key_b]
+            node_b_idx, node_b = random.choice(group_b)
 
-
-def build_connections(corrections: list[dict], min_connections=2, max_connections=3) -> list[dict]:
-    from collections import defaultdict
-    grouped = defaultdict(list)
-
-    for i, correction in enumerate(corrections):
-        grouped[correction["changeType"]].append((i, correction))
-
-    for group in grouped.values():
-        _ = [idx for idx, _ in group]
-        for i, (_, current_correction) in enumerate(group):
-            connections = []
-            for offset in range(1, max_connections + 1):
-                other_idx = (i + offset) % len(group)
-                if other_idx == i:
-                    continue
-                connections.append(group[other_idx][0])
-                if len(connections) >= max_connections:
-                    break
-            current_correction["connections"] = connections[:max(len(connections), min_connections)]
+            node_a["connections"].append(node_b_idx)
+            node_b["connections"].append(node_a_idx)
 
     return corrections
 
