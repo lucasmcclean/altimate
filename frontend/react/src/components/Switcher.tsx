@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react";
 import Graph from './graph'
 import { Toggle } from "./ui/toggle";
+import { useTheme } from "../lib/ThemeContext";
+
 
 interface NodeType{
 	changeType: string,
@@ -41,6 +43,7 @@ interface NodeData {
 
 const Switcher = () => {
 	const accessibility_type_lower = ["img_alt", "img_contrast",  "page_contrast",  "page_navigation",  "page_skip_to_main"]
+	const { theme } = useTheme();
 	const [accesibilityArr, setAccesibilityArr] = useState<string[]>(accessibility_type_lower);
 	const [nodes, setNodes] = useState<NodeType[]>([]);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
@@ -153,16 +156,17 @@ const Switcher = () => {
 	return (
 		<div className="w-screen flex items-center justify-around min-h-screen bg-white dark:bg-gray-900">
 		{showSwitcherBar && 
-			<div className={`w-[60%] flex flex-col h-screen transition-transform duration-300 ease-out ${slideInSwitcherBar ? 'translate-x-0' : '-translate-x-full'}`}> 
+			<div className={`w-[60%] flex flex-col justify h-screen transition-transform duration-300 ease-out ${slideInSwitcherBar ? 'translate-x-0' : '-translate-x-full'}`}> 
 		<div className="w-full flex justify-center items-center">
-		<img src='/FULL_LOGO.webp' className="w-[70%]" />
+		<img src={theme === 'dark' ? '/FULL_LOGO_WHITE.webp' : '/FULL_LOGO.webp'} className="w-[70%]" />
 		</div>
 		<Separator />
-		<div className={`w-[90%] border border-gray-800 self-center mt-${dev ? '64' : '12'} max-w-md p-6 bg-white rounded-lg shadow-md dark:bg-gray-800`}>
+		<div className={`flex flex-col justify-${dev ? 'start' : 'center'} h-full align-middle bg-[#E9ECEE] dark:bg-gray-950`}>
+		<div className={`w-[90%] border bg-white mb-20 border-gray-200 dark:border-gray-700 self-center mt-12 max-w-md p-6 rounded-lg shadow-md dark:bg-gray-800`}>
 		<div className="flex flex-col items-start justify-between mb-6">
-		<p className="text-3xl text-gray-900 dark:text-gray-100">Accessibility Options</p>
+		<p className="text-3xl bg-gradient-to-b from-black dark:from-white to-teal-500 text-transparent bg-clip-text font-muna font-bold">Accessibility Options</p>
 		<div className="flex items-center space-x-2 mt-4">
-		<Label htmlFor="dev-mode" className="font-bold text-xl">{dev ? 'Developer' : 'User'}</Label>
+		<Label htmlFor="dev-mode" className="font-bold text-xl text-gray-800 dark:text-white">{dev ? 'Developer' : 'User'}</Label>
 		<Switch id="dev-mode" checked={dev} onCheckedChange={setDev} />
 		</div>
 		</div>
@@ -180,19 +184,20 @@ const Switcher = () => {
 				variant="outline"
 				pressed={accesibilityArr.includes(atl)}
 				onPressedChange={(checked) => handleToggle(atl, checked)}
-				className="data-[state=on]:bg-gradient-to-b data-[state=on]:from-[#65BFB0] data-[state=on]:to-[#7AB1D7] data-[state=on]:text-white"
+									className="data-[state=on]:bg-gradient-to-r data-[state=on]:from-[#65BFB0] data-[state=on]:to-[#7AB1D7] data-[state=on]:text-white dark:data-[state=on]:[#31C4AA] dark:data-[state=on]:[#6AB3DD]"
 				> {translate(atl)}
 				</Toggle>
 				</div>
 			))}
 			</div>
 		</div>
-
-    {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-
 		<Button className="w-full btn-gradient-hover" onClick={makeAccessible} disabled={isLoading}>
 		{isLoading ? 'Loading...' : 'Make Accessible ✦'}
 		</Button>
+		</div>
+
+    {error && <p className="text-red-500 dark:text-red-400 text-sm mt-4">{error}</p>}
+
 		</div>
 			</div>}
 

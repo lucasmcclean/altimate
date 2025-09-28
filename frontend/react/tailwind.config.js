@@ -6,7 +6,11 @@ export default {
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        muna: ['"Muna Bold"', 'sans-serif'],
+      },
+    },
   },
   plugins: [require('tailwind-scrollbar')],
 }

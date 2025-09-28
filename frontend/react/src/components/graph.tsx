@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/dialog"
 import { Lightbulb, Settings, Search } from 'lucide-react';
 import * as d3 from 'd3';
-import { Textarea } from './ui/textarea';
+
+import { useTheme } from '../lib/ThemeContext';
 
 // Type definitions
 type ChangeType = 
@@ -58,7 +59,7 @@ interface GraphProps {
     connections: number[];
   }>;
 	selectedNode: NodeData;
-	setSelectedNode: any;
+	setSelectedNode: (node: NodeData | null) => void;
 }
 
 // Simulation node type for D3
@@ -97,14 +98,7 @@ const getChangeTypeColor = (changeType: ChangeType): string => {
 };
 
 const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) => {
-  if (!nodes || Object.keys(nodes).length === 0) {
-    return (
-      <div className="flex items-center justify-center w-full h-full bg-gray-900 text-white">
-        <p>No data available to display the graph.</p>
-      </div>
-    );
-  }
-	
+  const { theme } = useTheme();
   const svgRef = useRef<SVGSVGElement>(null);
   const nodeRef = useRef<d3.Selection<SVGCircleElement, NodeData, SVGGElement, unknown> | null>(null);
   const labelRef = useRef<d3.Selection<SVGTextElement, NodeData, SVGGElement, unknown> | null>(null);
@@ -138,6 +132,11 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 
   const [dimensions, setDimensions] = useState<Dimensions>({ width: 800, height: 600 });
 
+  const [showOptionsBar, setShowOptionsBar] = useState(false);
+  const [slideInOptionsBar, setSlideInOptionsBar] = useState(false);
+  const [optionsBarNode, setOptionsBarNode] = useState<NodeData | null>(null);
+	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
   useEffect(() => {
     const updateDimensions = (): void => {
       const container = svgRef.current?.parentElement;
@@ -153,6 +152,14 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
+
+  if (!nodes || Object.keys(nodes).length === 0) {
+    return (
+      <div className="flex items-center justify-center w-full h-full bg-gray-900 text-white">
+        <p>No data available to display the graph.</p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
@@ -188,7 +195,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .selectAll("line")
       .data(filteredLinks)
       .enter().append("line")
-      .attr("stroke", "#4a5568")
+      .attr("stroke", theme === 'dark' ? "#9ca3af" : "#4a5568") // Dark mode link color
       .attr("stroke-opacity", 0.6)
       .attr("stroke-width", 2);
 
@@ -200,7 +207,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .enter().append("circle")
       .attr("r", d => d.id === selectedNode?.id ? d.size * 2 : d.size)
       .attr("fill", d => d.color)
-      .attr("stroke", "#fff")
+      .attr("stroke", theme === 'dark' ? "#374151" : "#fff") // Dark mode node stroke
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
       .style("opacity", d => d.id === selectedNode?.id || !selectedNode ? 1 : 0.3)
@@ -216,7 +223,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       .text(d => d.changeType[0])
       .attr("font-size", "12px")
       .attr("font-family", "Arial, sans-serif")
-      .attr("fill", "#e2e8f0")
+      .attr("fill", theme === 'dark' ? "#e2e8f0" : "#374151") // Dark mode label color
       .attr("text-anchor", "middle")
       .attr("dy", ".35em")
       .style("pointer-events", "none")
@@ -282,10 +289,10 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 
     simulation.on("tick", () => {
       link
-        .attr("x1", (d: any) => d.source.x)
-        .attr("y1", (d: any) => d.source.y)
-        .attr("x2", (d: any) => d.target.x)
-        .attr("y2", (d: any) => d.target.y);
+        .attr("x1", (d: SimulationLink) => (d.source as SimulationNode).x)
+        .attr("y1", (d: SimulationLink) => (d.source as SimulationNode).y)
+        .attr("x2", (d: SimulationLink) => (d.target as SimulationNode).x)
+        .attr("y2", (d: SimulationLink) => (d.target as SimulationNode).y);
 
       node
         .attr("cx", (d: NodeData) => d.x || 0)
@@ -300,7 +307,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
     labelRef.current = label; // Store label selection
 
     return () => simulation.stop();
-  }, [selectedNode, graphData, dimensions]);
+  }, [selectedNode, graphData, dimensions, theme]);
 
   useEffect(() => {
     if (nodeRef.current) {
@@ -330,14 +337,14 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       // Reset zoom when no node is selected
       d3.select(svgRef.current).transition().duration(750).call(zoomRef.current.transform, d3.zoomIdentity);
     }
-  }, [selectedNode, dimensions, graphData.nodes]);
+  }, [selectedNode, dimensions, graphData.nodes, setSelectedNode]);
 
   
 
-  const [showOptionsBar, setShowOptionsBar] = useState(false);
-  const [slideInOptionsBar, setSlideInOptionsBar] = useState(false);
-  const [optionsBarNode, setOptionsBarNode] = useState<NodeData | null>(null);
-	const [dialogOpen, setDialogOpen] = useState<Boolean>(false);
+  
+  
+  
+	
 
   useEffect(() => {
     if (selectedNode) {
@@ -383,37 +390,37 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 	}
 
   return (
-    <div className="w-full h-screen bg-gray-100 text-white relative overflow-hidden">
+    <div className="w-full h-screen bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white relative overflow-hidden">
       {showOptionsBar && optionsBarNode && (
         <div
-          className={`absolute right-0 bg-white p-0 z-10 w-1/3 h-full flex flex-col transition-transform duration-300 ease-out ${
+          className={`absolute right-0 bg-white dark:bg-gray-900 p-0 z-10 w-1/3 h-full flex flex-col transition-transform duration-300 ease-out ${
             slideInOptionsBar ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="bg-white rounded-t-lg px-4 py-3 border-b border-gray-600">
-            <h3 className="font-semibold text-lg text-[#44455A]">{optionsBarNode.changeType}</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-t-lg px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="font-semibold text-lg text-[#44455A] dark:text-white">{optionsBarNode.changeType}</h3>
           </div>
           
           <div className="flex-1 p-4 overflow-y-auto">
-            <h4 className="font-bold text-[#44455A] mb-2 text-sm">Description</h4>
-            <p className="text-[#5C5C6D] leading-relaxed">{optionsBarNode.descriptionText}</p>
+            <h4 className="font-bold text-[#44455A] dark:text-gray-200 mb-2 text-sm">Description</h4>
+            <p className="text-[#5C5C6D] dark:text-gray-300 leading-relaxed">{optionsBarNode.descriptionText}</p>
           </div>
           
-					<div className="border-t border-gray-600 p-4 bg-gray-750">
-					<p className="text-md text-gray-500 mb-3 font-mono break-all">
+					<div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
+					<p className="text-md text-gray-500 dark:text-gray-400 mb-3 font-mono break-all">
 					{optionsBarNode.querySelector}
 					</p>
 					<div className='flex justify-around'>
 					<button
 					onClick={() => setSelectedNode(null)}
-					className="w-2/5 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors font-medium btn-gradient-hover"
+					className="w-2/5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-sm transition-colors font-medium btn-gradient-hover text-gray-800 dark:text-white"
 					>
 					Close
 					</button>
 					<Button
 					onClick={() => executeChange(selectedNode)}
 					variant="outline"
-					className="w-2/5 text-black"
+					className="w-2/5 text-black dark:text-white dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
 					>
 					Execute 
 					</Button>
@@ -428,32 +435,32 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
 			{/* Remove Button wrapper to avoid size constraints */}
 			<div className="cursor-pointer p-2 pointer-events-auto"> {/* Add padding for touch target */}
 				<Lightbulb
-			className="w-6 h-6 text-[#333348]"
-			fill={dialogOpen ? "#ADD8E6" : "none"}
+			className="w-6 h-6 text-[#333348] dark:text-gray-300"
+			fill={dialogOpen ? (theme === 'dark' ? "#ADD8E6" : "#ADD8E6") : "none"}
 			/>
 			</div>
 			</DialogTrigger>
 			<DialogContent 
-			className="fixed right-4 top-[50%] max-h-[80vh] max-w-md overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
+			className="fixed right-4 top-[50%] max-h-[80vh] max-w-md overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
 			>
-			<div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+			<div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
 			<div className="flex items-center gap-2 mb-2">
-			<h1 className="text-2xl font-bold text-gray-800">Accessibility Issues Overview</h1>
+			<h1 className="text-2xl font-bold text-gray-800 dark:text-white">Accessibility Issues Overview</h1>
 			</div>
 
-  <p className="text-gray-600 mb-6">
+  <p className="text-gray-600 dark:text-gray-300 mb-6">
     This Chrome extension scans your website for accessibility issues and displays them as clickable nodes.
   </p>
   
-  <hr className="border-gray-300 mb-6" />
+  <hr className="border-gray-300 dark:border-gray-600 mb-6" />
   
   <div className="mb-6">
     <div className="flex items-center gap-2 mb-3">
-      <Search className="w-5 h-5 text-gray-600" />
-      <h2 className="text-lg font-semibold text-gray-800">How It Works:</h2>
+      <Search className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">How It Works:</h2>
     </div>
     
-    <div className="ml-7 space-y-2 text-gray-700">
+    <div className="ml-7 space-y-2 text-gray-700 dark:text-gray-300">
       <p>- Each <span className="font-semibold">node</span> represents a specific <span className="font-semibold">accessibility issue</span> found on the page.</p>
       <p>- Clicking a node will show you:</p>
       <div className="ml-4 space-y-1">
@@ -466,14 +473,14 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   
   <div className="mb-6">
     <div className="flex items-center gap-2 mb-3">
-      <Settings className="w-5 h-5 text-gray-600" />
-      <h2 className="text-lg font-semibold text-gray-800">Two Modes of Use:</h2>
+      <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Two Modes of Use:</h2>
     </div>
     
     <div className="ml-7 space-y-4">
       <div>
         <h3 className="font-semibold text-teal-500 mb-2">Developer Mode:</h3>
-        <div className="space-y-1 text-gray-700">
+        <div className="space-y-1 text-gray-700 dark:text-gray-300">
           <p>° Click on each node to review and <span className="font-semibold">manually fix</span> issues.</p>
           <p>° Great for learning how to improve accessibility yourself.</p>
         </div>
@@ -481,7 +488,7 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
       
       <div>
         <h3 className="font-semibold text-teal-500 mb-2">User Mode:</h3>
-        <div className="space-y-1 text-gray-700">
+        <div className="space-y-1 text-gray-700 dark:text-gray-300">
           <p>° The extension will <span className="font-semibold">automatically fix</span> accessibility issues when the page is rendered.</p>
           <p>° This helps users with disabilities have a more accessible browsing experience without needing to click anything.</p>
         </div>
@@ -491,11 +498,11 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
   
   <div>
     <div className="flex items-center gap-2 mb-3">
-      <Lightbulb className="w-5 h-5 text-gray-600" />
-      <h2 className="text-lg font-semibold text-gray-800">Tip:</h2>
+      <Lightbulb className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Tip:</h2>
     </div>
     
-    <p className="ml-7 text-gray-700">
+    <p className="ml-7 text-gray-700 dark:text-gray-300">
       Use this tool to ensure your website is accessible to everyone, including people using screen readers, keyboard navigation, or other assistive technologies.
     </p>
   </div>
