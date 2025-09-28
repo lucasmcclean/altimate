@@ -30,7 +30,7 @@ accessibility to any site they visit.
 ## Reaching Beyond Basic Accessibility
 
 Tools that can statically analyze and programmatically address accessibility issues
-serve a foundational role on the web. But there is a strong lack of 'semantic'
+serve a foundational role on the web. But there is a lack of 'semantic'
 accessibility tools that can take their role one step further by making context-aware
 decisions and taking unique approaches to ensuring an accessible web. **Altimate**
 does just that.
