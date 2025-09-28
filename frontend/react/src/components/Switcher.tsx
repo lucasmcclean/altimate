@@ -45,9 +45,20 @@ const Switcher = () => {
 	const accessibility_type_lower = ["img_alt", "img_contrast",  "page_contrast",  "page_navigation",  "page_skip_to_main"]
 	const { theme } = useTheme();
 	const [accesibilityArr, setAccesibilityArr] = useState<string[]>(accessibility_type_lower);
-	const [nodes, setNodes] = useState<NodeType[]>([]);
+	const [nodes, setNodes] = useState<NodeType[]>(() => {
+    const savedNodes = localStorage.getItem('nodes');
+    return savedNodes ? JSON.parse(savedNodes) : [];
+  });
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [dev, setDev] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.get(['devMode'], (result) => {
+        setDev(result.devMode === true);
+      });
+    }
+  }, []);
   const [showDevOptions, setShowDevOptions] = useState<boolean>(false); // New state for controlling rendering
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,14 +78,22 @@ const Switcher = () => {
     }
   }, []);
 
-  // Save accessibility options to chrome.storage whenever they change
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.local.set({ devMode: dev });
+    }
+  }, [dev]);
+
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.sync.set({ accesibilityArr });
     }
   }, [accesibilityArr]);
 
-  // Effect to manage the rendering of developer options with a delay for transition
+  useEffect(() => {
+    localStorage.setItem('nodes', JSON.stringify(nodes));
+  }, [nodes]);
+
   useEffect(() => {
     if (dev) {
       setShowDevOptions(true);
@@ -84,7 +103,6 @@ const Switcher = () => {
     }
   }, [dev]);
 
-  // Effect to manage the Switcher bar animation based on selectedNode
   useEffect(() => {
     if (selectedNode) {
       setSlideInSwitcherBar(false); // Start sliding out
@@ -147,8 +165,16 @@ const Switcher = () => {
     })
     .then(response => response.json())
     .then(data => {
+      console.log(data);
       setIsLoading(false);
       setNodes(data);
+      chrome.scripting.executeScript({
+        target: {tabId: tab.id},
+        function: (data) => {
+          console.log(data);
+        },
+        args: [data]
+      });
     })
 	}
 

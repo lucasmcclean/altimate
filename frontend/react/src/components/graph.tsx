@@ -369,7 +369,12 @@ const Graph: React.FC<GraphProps> = ({ selectedNode, setSelectedNode, nodes }) =
         target: {tabId: tab.id},
         function: (selector: string, html: string) => {
             const elem = document.querySelector(selector);
-            if(elem) elem.outerHTML = html;
+            if(!elem) return;
+						if(selector != 'body'){
+							elem.outerHTML = html
+						} else {
+							elem.innerHTML = html + elem.innerHTML
+						}
         },
         args: [querySelector, replacementHTML]
     });

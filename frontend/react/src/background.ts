@@ -1,16 +1,11 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === "MAKE_ACCESSIBLE") {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0].id) {
-        chrome.tabs.sendMessage(tabs[0].id, request, (response) => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-          } else {
-            sendResponse(response);
-          }
-        });
-      }
+  console.log("Background script received message:", request);
+  if (request.action === "getDevMode") {
+    chrome.storage.local.get('devMode', (result) => {
+      const devMode = result.devMode === true;
+      console.log("Background script sending response:", { devMode: devMode });
+      sendResponse({ devMode: devMode });
     });
+    return true; // Indicate that sendResponse will be called asynchronously
   }
-  return true;
 });
