@@ -1,3 +1,18 @@
+<div align="center">
+<img src="frontend/react/public/FULL_LOGO.webp" alt="Altimate Logo" width="300"/>
+
+<p>
+
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Gemini](https://img.shields.io/badge/gemini-75A5EB?style=for-the-badge&logo=google&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+</p>
+</div>
+
 # Altimate
 
 Web accessibility, despite becoming more broadly addressed, is still a widely
